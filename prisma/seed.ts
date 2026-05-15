@@ -8,6 +8,24 @@ const transparentPng = Buffer.from(
   "hex",
 )
 
+function category(name: string) {
+  return {
+    connectOrCreate: {
+      where: { name },
+      create: {
+        name,
+        slug: name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, ""),
+      },
+    },
+  }
+}
+
 async function main() {
   const passwordHash = await bcrypt.hash("123456", 10)
 
@@ -40,14 +58,16 @@ async function main() {
     data: {
       title: "Como um blog aproxima produto e comunidade",
       summary: "Uma visao pratica de como conteudo tecnico fortalece produto, marca e comunidade.",
-      category: "Desenvolvimento web",
+      category: category("Desenvolvimento web"),
       content:
         "Um blog bem estruturado ajuda a registrar novidades, bastidores e aprendizados de um produto. Neste primeiro artigo, a proposta e mostrar uma API simples, segura e preparada para integracao com o frontend.",
       bannerImage: transparentPng,
       bannerMimeType: "image/png",
       viewsCount: 122,
       likesCount: 1,
-      authorId: user.id,
+      author: {
+        connect: { id: user.id },
+      },
       tags: {
         create: ["Typescript", "Backend", "Produto"].map((name) => ({
           tag: {
@@ -65,14 +85,16 @@ async function main() {
     data: {
       title: "Autenticacao e conteudo sob controle",
       summary: "Login, permissoes e autoria para manter a publicacao segura sem pesar na experiencia.",
-      category: "Desenvolvimento backend",
+      category: category("Desenvolvimento backend"),
       content:
         "Criar, editar e remover artigos exige login, enquanto leitura e listagem seguem publicas. Esse desenho atende o minimo do case e deixa a experiencia simples para usuarios e avaliadores.",
       bannerImage: transparentPng,
       bannerMimeType: "image/png",
       viewsCount: 84,
       likesCount: 2,
-      authorId: user.id,
+      author: {
+        connect: { id: user.id },
+      },
       tags: {
         create: ["Autenticacao", "JWT", "Express"].map((name) => ({
           tag: {

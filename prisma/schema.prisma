@@ -29,7 +29,7 @@ model Article {
   title          String   @db.VarChar(180)
   summary        String?  @db.VarChar(280)
   content        String   @db.Text
-  category       String?  @db.VarChar(120)
+  categoryId     Int?     @map("category_id")
   bannerImage    Bytes?   @map("banner_image") @db.LongBlob
   bannerMimeType String?  @map("banner_mime_type") @db.VarChar(80)
   viewsCount     Int      @default(0) @map("views_count")
@@ -38,12 +38,25 @@ model Article {
   publishedAt    DateTime @default(now()) @map("published_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
   author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  category       Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   tags           ArticleTag[]
   comments       Comment[]
   likes          ArticleLike[]
 
   @@index([authorId])
+  @@index([categoryId])
   @@map("articles")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique @db.VarChar(120)
+  slug      String    @unique @db.VarChar(140)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  articles  Article[]
+
+  @@map("categories")
 }
 
 model Tag {
