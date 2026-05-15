@@ -20,6 +20,7 @@ model User {
   articles     Article[]
   comments     Comment[]
   likes        ArticleLike[]
+  reads        ArticleRead[]
 
   @@map("users")
 }
@@ -42,6 +43,7 @@ model Article {
   tags           ArticleTag[]
   comments       Comment[]
   likes          ArticleLike[]
+  reads          ArticleRead[]
 
   @@index([authorId])
   @@index([categoryId])
@@ -105,4 +107,20 @@ model ArticleLike {
   @@unique([articleId, userId])
   @@index([userId])
   @@map("article_likes")
+}
+
+model ArticleRead {
+  id              Int      @id @default(autoincrement())
+  articleId       Int      @map("article_id")
+  userId          Int?     @map("user_id")
+  readerId        String   @map("reader_id") @db.VarChar(80)
+  durationSeconds Int      @map("duration_seconds")
+  createdAt       DateTime @default(now()) @map("created_at")
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([articleId])
+  @@index([userId])
+  @@index([readerId])
+  @@map("article_reads")
 }
