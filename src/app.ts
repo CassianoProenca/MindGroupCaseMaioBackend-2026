@@ -2,6 +2,7 @@ import cors from "cors"
 import express, { type ErrorRequestHandler } from "express"
 
 import { env } from "./config/env.js"
+import { authRoutes } from "./routes/authRoutes.js"
 
 export const app = express()
 
@@ -11,6 +12,8 @@ app.use(express.json())
 app.get("/health", (_request, response) => {
   response.json({ status: "ok" })
 })
+
+app.use("/auth", authRoutes)
 
 const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
   const message = error instanceof Error ? error.message : "Erro interno do servidor."
