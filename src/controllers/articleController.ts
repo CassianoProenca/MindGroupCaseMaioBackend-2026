@@ -8,6 +8,20 @@ import { sendError } from "../utils/http.js"
 const articleSchema = z.object({
   title: z.string().trim().min(4, "Titulo deve ter pelo menos 4 caracteres."),
   content: z.string().trim().min(20, "Conteudo deve ter pelo menos 20 caracteres."),
+  summary: z.string().trim().max(280, "Resumo deve ter no maximo 280 caracteres.").optional(),
+  category: z.string().trim().max(120, "Categoria deve ter no maximo 120 caracteres.").optional(),
+  tags: z
+    .string()
+    .optional()
+    .transform((value) =>
+      value
+        ? value
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+            .slice(0, 8)
+        : [],
+    ),
 })
 
 const articleInclude = {
@@ -16,6 +30,14 @@ const articleInclude = {
       id: true,
       name: true,
       email: true,
+      bio: true,
+      avatarUrl: true,
+      role: true,
+    },
+  },
+  tags: {
+    include: {
+      tag: true,
     },
   },
 } as const
@@ -26,11 +48,16 @@ function mapArticle(article: ArticleWithAuthor) {
   return {
     id: article.id,
     title: article.title,
+    summary: article.summary,
     content: article.content,
+    category: article.category,
     bannerUrl: article.bannerImage ? `/articles/${article.id}/banner` : null,
+    viewsCount: article.viewsCount,
+    likesCount: article.likesCount,
     publishedAt: article.publishedAt,
     updatedAt: article.updatedAt,
     author: article.author,
+    tags: article.tags.map(({ tag }) => tag.name),
   }
 }
 
@@ -113,10 +140,22 @@ export async function createArticle(request: Request, response: Response) {
   const article = await prisma.article.create({
     data: {
       title: parsed.data.title,
+      summary: parsed.data.summary,
       content: parsed.data.content,
+      category: parsed.data.category,
       bannerImage: toPrismaBytes(request.file.buffer),
       bannerMimeType: request.file.mimetype,
       authorId: request.user.id,
+      tags: {
+        create: parsed.data.tags.map((name) => ({
+          tag: {
+            connectOrCreate: {
+              where: { name },
+              create: { name },
+            },
+          },
+        })),
+      },
     },
     include: articleInclude,
   })
@@ -160,7 +199,20 @@ export async function updateArticle(request: Request, response: Response) {
     where: { id },
     data: {
       title: parsed.data.title,
+      summary: parsed.data.summary,
       content: parsed.data.content,
+      category: parsed.data.category,
+      tags: {
+        deleteMany: {},
+        create: parsed.data.tags.map((name) => ({
+          tag: {
+            connectOrCreate: {
+              where: { name },
+              create: { name },
+            },
+          },
+        })),
+      },
       ...(request.file
         ? {
             bannerImage: toPrismaBytes(request.file.buffer),
