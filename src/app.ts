@@ -2,6 +2,7 @@ import cors from "cors"
 import express, { type ErrorRequestHandler } from "express"
 
 import { env } from "./config/env.js"
+import { articleRoutes } from "./routes/articleRoutes.js"
 import { authRoutes } from "./routes/authRoutes.js"
 
 export const app = express()
@@ -14,9 +15,15 @@ app.get("/health", (_request, response) => {
 })
 
 app.use("/auth", authRoutes)
+app.use("/articles", articleRoutes)
 
 const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
   const message = error instanceof Error ? error.message : "Erro interno do servidor."
+
+  if (error instanceof Error && error.message.includes("banner")) {
+    response.status(400).json({ message })
+    return
+  }
 
   response.status(500).json({ message })
 }
