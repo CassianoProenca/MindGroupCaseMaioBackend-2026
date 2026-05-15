@@ -26,3 +26,21 @@ export function authenticate(request: Request, response: Response, next: NextFun
     return sendError(response, 401, "Token invalido ou expirado.")
   }
 }
+
+export function optionalAuthenticate(request: Request, _response: Response, next: NextFunction) {
+  const authHeader = request.headers.authorization
+
+  if (!authHeader?.startsWith("Bearer ")) {
+    return next()
+  }
+
+  const token = authHeader.replace("Bearer ", "")
+
+  try {
+    request.user = jwt.verify(token, env.jwtSecret) as TokenPayload
+  } catch {
+    request.user = undefined
+  }
+
+  return next()
+}

@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import { prisma } from "../config/prisma.js"
 import { sendError } from "../utils/http.js"
+import { getReadingTimeMinutes } from "../utils/readingTime.js"
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres."),
@@ -90,4 +91,124 @@ export async function updateMyProfile(request: Request, response: Response) {
   })
 
   return response.json({ profile: mapProfile(user) })
+}
+
+export async function getMyDashboardMetrics(request: Request, response: Response) {
+  if (!request.user) {
+    return sendError(response, 401, "Usuario nao autenticado.")
+  }
+
+  const articles = await prisma.article.findMany({
+    where: { authorId: request.user.id },
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      summary: true,
+      content: true,
+      bannerImage: true,
+      viewsCount: true,
+      likesCount: true,
+      publishedAt: true,
+      updatedAt: true,
+      reads: {
+        select: {
+          durationSeconds: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+        },
+      },
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  })
+
+  const totals = articles.reduce(
+    (current, article) => {
+      const readSeconds = article.reads.reduce((total, read) => total + read.durationSeconds, 0)
+      const likes = article._count.likes
+
+      return {
+        views: current.views + article.viewsCount,
+        likes: current.likes + likes,
+        reads: current.reads + article.reads.length,
+        readSeconds: current.readSeconds + readSeconds,
+      }
+    },
+    {
+      views: 0,
+      likes: 0,
+      reads: 0,
+      readSeconds: 0,
+    },
+  )
+
+  const articleMetrics = articles.map((article) => {
+      const totalReadSeconds = article.reads.reduce((total, read) => total + read.durationSeconds, 0)
+      const averageReadSeconds = article.reads.length > 0 ? Math.round(totalReadSeconds / article.reads.length) : 0
+
+      return {
+        id: article.id,
+        title: article.title,
+        summary: article.summary,
+        bannerUrl: article.bannerImage ? `/articles/${article.id}/banner` : null,
+        viewsCount: article.viewsCount,
+        likesCount: article._count.likes,
+        readsCount: article.reads.length,
+        totalReadSeconds,
+        averageReadSeconds,
+        readingTimeMinutes: getReadingTimeMinutes(article.content),
+        category: article.category?.name ?? null,
+        publishedAt: article.publishedAt,
+        updatedAt: article.updatedAt,
+      }
+    })
+
+  const topArticles = [...articleMetrics]
+    .sort((first, second) => {
+      const firstScore = first.likesCount * 2 + first.viewsCount + first.readsCount * 3
+      const secondScore = second.likesCount * 2 + second.viewsCount + second.readsCount * 3
+      return secondScore - firstScore
+    })
+    .slice(0, 5)
+
+  const recentActivity = articles.slice(0, 5).map((article) => ({
+    id: article.id,
+    title: article.title,
+    category: article.category?.name ?? null,
+    updatedAt: article.updatedAt,
+    type: article.publishedAt.getTime() === article.updatedAt.getTime() ? "published" : "updated",
+  }))
+
+  return response.json({
+    metrics: {
+      totals: {
+        articles: articles.length,
+        views: totals.views,
+        likes: totals.likes,
+        reads: totals.reads,
+        totalReadSeconds: totals.readSeconds,
+        engagement: totals.views + totals.likes,
+        averageReadSeconds: totals.reads > 0 ? Math.round(totals.readSeconds / totals.reads) : 0,
+        averageReadingTimeMinutes:
+          articles.length > 0
+            ? Math.max(
+                1,
+                Math.round(
+                  articles.reduce((total, article) => total + getReadingTimeMinutes(article.content), 0) / articles.length,
+                ),
+              )
+            : 0,
+      },
+      articleMetrics,
+      topArticles,
+      recentActivity,
+    },
+  })
 }
