@@ -12,6 +12,7 @@ Backend em Node.js, Express, TypeScript, Prisma e MySQL para o case de estagio d
 - bcrypt para senhas
 - JWT Bearer para autenticacao
 - Banner dos artigos salvo como BLOB no MySQL
+- Comentarios, tags, perfil, curtidas e visualizacoes
 
 ## Como rodar com Docker
 
@@ -78,6 +79,11 @@ Exemplo de cadastro:
 - `GET /articles`
 - `GET /articles/:id`
 - `GET /articles/:id/banner`
+- `GET /articles/:id/comments`
+- `POST /articles/:id/comments`
+- `POST /articles/:id/like`
+- `DELETE /articles/:id/like`
+- `POST /articles/:id/view`
 - `POST /articles`
 - `PUT /articles/:id`
 - `DELETE /articles/:id`
@@ -87,12 +93,37 @@ Criacao e edicao usam `multipart/form-data`:
 - `title`: titulo do artigo
 - `content`: conteudo do artigo
 - `banner`: arquivo de imagem
+- `summary`: resumo opcional
+- `category`: categoria opcional
+- `tags`: tags opcionais separadas por virgula
 
-As rotas `POST`, `PUT` e `DELETE` exigem header:
+As rotas de escrita exigem header:
 
 ```http
 Authorization: Bearer seu_token
 ```
+
+### Perfil
+
+- `GET /profile/me`
+- `PUT /profile/me`
+
+Campos editaveis:
+
+- `name`
+- `bio`
+- `avatarUrl`
+
+## Cobertura do case
+
+- Cadastro e login de usuarios com senha criptografada por bcrypt.
+- CRUD autenticado de artigos.
+- Autor relacionado ao usuario.
+- Datas de publicacao e alteracao.
+- Banner salvo como BLOB no MySQL.
+- Dump SQL no repositorio.
+- Docker Compose com API e MySQL.
+- Recursos extras para enriquecer o blog: tags, categoria, resumo, comentarios, curtidas, views e perfil.
 
 ## Banco de dados
 
