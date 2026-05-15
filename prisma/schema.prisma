@@ -12,9 +12,14 @@ model User {
   name         String    @db.VarChar(120)
   email        String    @unique @db.VarChar(160)
   passwordHash String    @map("password_hash") @db.VarChar(255)
+  bio          String?   @db.Text
+  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
+  role         String    @default("AUTHOR") @db.VarChar(40)
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   articles     Article[]
+  comments     Comment[]
+  likes        ArticleLike[]
 
   @@map("users")
 }
@@ -22,14 +27,69 @@ model User {
 model Article {
   id             Int      @id @default(autoincrement())
   title          String   @db.VarChar(180)
+  summary        String?  @db.VarChar(280)
   content        String   @db.Text
+  category       String?  @db.VarChar(120)
   bannerImage    Bytes?   @map("banner_image") @db.LongBlob
   bannerMimeType String?  @map("banner_mime_type") @db.VarChar(80)
+  viewsCount     Int      @default(0) @map("views_count")
+  likesCount     Int      @default(0) @map("likes_count")
   authorId       Int      @map("author_id")
   publishedAt    DateTime @default(now()) @map("published_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
   author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags           ArticleTag[]
+  comments       Comment[]
+  likes          ArticleLike[]
 
   @@index([authorId])
   @@map("articles")
+}
+
+model Tag {
+  id        Int          @id @default(autoincrement())
+  name      String       @unique @db.VarChar(80)
+  createdAt DateTime     @default(now()) @map("created_at")
+  articles  ArticleTag[]
+
+  @@map("tags")
+}
+
+model ArticleTag {
+  articleId Int     @map("article_id")
+  tagId     Int     @map("tag_id")
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+  @@map("article_tags")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  articleId Int      @map("article_id")
+  authorId  Int      @map("author_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([articleId])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model ArticleLike {
+  id        Int      @id @default(autoincrement())
+  articleId Int      @map("article_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([userId])
+  @@map("article_likes")
 }
