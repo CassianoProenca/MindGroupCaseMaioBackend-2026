@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import { prisma } from "../config/prisma.js"
 import { sendError } from "../utils/http.js"
+import { getPagination, getSearch, makePaginationMeta } from "../utils/pagination.js"
 
 const commentSchema = z.object({
   content: z.string().trim().min(3, "Comentario deve ter pelo menos 3 caracteres.").max(1000),
@@ -50,22 +51,37 @@ export async function listComments(request: Request, response: Response) {
     return sendError(response, 404, "Artigo nao encontrado.")
   }
 
-  const comments = await prisma.comment.findMany({
-    where: { articleId },
-    orderBy: { createdAt: "desc" },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
+  const { page, perPage, skip, take } = getPagination(request)
+  const search = getSearch(request)
+  const where = {
+    articleId,
+    ...(search ? { content: { contains: search } } : {}),
+  }
+
+  const [comments, total] = await prisma.$transaction([
+    prisma.comment.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatarUrl: true,
+          },
         },
       },
-    },
-  })
+    }),
+    prisma.comment.count({ where }),
+  ])
 
-  return response.json({ comments: comments.map(mapComment) })
+  return response.json({
+    comments: comments.map(mapComment),
+    meta: makePaginationMeta(total, page, perPage),
+  })
 }
 
 export async function createComment(request: Request, response: Response) {

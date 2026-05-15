@@ -4,6 +4,7 @@ import { z } from "zod"
 
 import { prisma } from "../config/prisma.js"
 import { sendError } from "../utils/http.js"
+import { getPagination, getSearch, makePaginationMeta } from "../utils/pagination.js"
 
 const articleSchema = z.object({
   title: z.string().trim().min(4, "Titulo deve ter pelo menos 4 caracteres."),
@@ -24,7 +25,12 @@ const articleSchema = z.object({
     ),
 })
 
+const categorySchema = z.object({
+  name: z.string().trim().min(2, "Categoria deve ter pelo menos 2 caracteres.").max(120),
+})
+
 const articleInclude = {
+  category: true,
   author: {
     select: {
       id: true,
@@ -44,13 +50,24 @@ const articleInclude = {
 
 type ArticleWithAuthor = Prisma.ArticleGetPayload<{ include: typeof articleInclude }>
 
+function makeSlug(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+}
+
 function mapArticle(article: ArticleWithAuthor) {
   return {
     id: article.id,
     title: article.title,
     summary: article.summary,
     content: article.content,
-    category: article.category,
+    categoryId: article.category?.id ?? null,
+    category: article.category?.name ?? null,
     bannerUrl: article.bannerImage ? `/articles/${article.id}/banner` : null,
     viewsCount: article.viewsCount,
     likesCount: article.likesCount,
@@ -61,6 +78,24 @@ function mapArticle(article: ArticleWithAuthor) {
   }
 }
 
+function getCategoryData(name: string | undefined) {
+  const categoryName = name?.trim()
+
+  if (!categoryName) {
+    return undefined
+  }
+
+  return {
+    connectOrCreate: {
+      where: { name: categoryName },
+      create: {
+        name: categoryName,
+        slug: makeSlug(categoryName),
+      },
+    },
+  }
+}
+
 function toPrismaBytes(buffer: Buffer) {
   const bytes = new Uint8Array(buffer.length)
   bytes.set(buffer)
@@ -68,15 +103,161 @@ function toPrismaBytes(buffer: Buffer) {
   return bytes
 }
 
-export async function listArticles(_request: Request, response: Response) {
-  const articles = await prisma.article.findMany({
-    orderBy: {
-      publishedAt: "desc",
+function mapCategory(category: {
+  id: number
+  name: string
+  slug: string
+  _count?: {
+    articles: number
+  }
+}) {
+  return {
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    articlesCount: category._count?.articles ?? 0,
+  }
+}
+
+export async function listCategories(request: Request, response: Response) {
+  const { page, perPage, skip, take } = getPagination(request)
+  const search = getSearch(request)
+  const where: Prisma.CategoryWhereInput = search ? { name: { contains: search } } : {}
+
+  const [categories, total] = await prisma.$transaction([
+    prisma.category.findMany({
+      where,
+      orderBy: { name: "asc" },
+      skip,
+      take,
+      include: {
+        _count: {
+          select: { articles: true },
+        },
+      },
+    }),
+    prisma.category.count({ where }),
+  ])
+
+  return response.json({
+    categories: categories.map(mapCategory),
+    meta: makePaginationMeta(total, page, perPage),
+  })
+}
+
+export async function createCategory(request: Request, response: Response) {
+  if (!request.user) {
+    return sendError(response, 401, "Usuario nao autenticado.")
+  }
+
+  const parsed = categorySchema.safeParse(request.body)
+
+  if (!parsed.success) {
+    return sendError(response, 400, parsed.error.issues[0]?.message ?? "Dados invalidos.")
+  }
+
+  const category = await prisma.category.create({
+    data: {
+      name: parsed.data.name,
+      slug: makeSlug(parsed.data.name),
     },
-    include: articleInclude,
+    include: {
+      _count: {
+        select: { articles: true },
+      },
+    },
   })
 
-  return response.json({ articles: articles.map(mapArticle) })
+  return response.status(201).json({ category: mapCategory(category) })
+}
+
+export async function updateCategory(request: Request, response: Response) {
+  if (!request.user) {
+    return sendError(response, 401, "Usuario nao autenticado.")
+  }
+
+  const id = Number(request.params.categoryId)
+
+  if (Number.isNaN(id)) {
+    return sendError(response, 400, "Id da categoria invalido.")
+  }
+
+  const parsed = categorySchema.safeParse(request.body)
+
+  if (!parsed.success) {
+    return sendError(response, 400, parsed.error.issues[0]?.message ?? "Dados invalidos.")
+  }
+
+  const category = await prisma.category.update({
+    where: { id },
+    data: {
+      name: parsed.data.name,
+      slug: makeSlug(parsed.data.name),
+    },
+    include: {
+      _count: {
+        select: { articles: true },
+      },
+    },
+  })
+
+  return response.json({ category: mapCategory(category) })
+}
+
+export async function deleteCategory(request: Request, response: Response) {
+  if (!request.user) {
+    return sendError(response, 401, "Usuario nao autenticado.")
+  }
+
+  const id = Number(request.params.categoryId)
+
+  if (Number.isNaN(id)) {
+    return sendError(response, 400, "Id da categoria invalido.")
+  }
+
+  await prisma.category.delete({ where: { id } })
+
+  return response.status(204).send()
+}
+
+export async function listArticles(request: Request, response: Response) {
+  const { page, perPage, skip, take } = getPagination(request)
+  const search = getSearch(request)
+  const categoryId = Number(request.query.categoryId)
+
+  const where: Prisma.ArticleWhereInput = {
+    ...(Number.isInteger(categoryId) && categoryId > 0 ? { categoryId } : {}),
+    ...(search
+      ? {
+          OR: [
+            { title: { contains: search } },
+            { summary: { contains: search } },
+            { content: { contains: search } },
+            { author: { name: { contains: search } } },
+            { category: { name: { contains: search } } },
+            { tags: { some: { tag: { name: { contains: search } } } } },
+          ],
+        }
+      : {}),
+  }
+
+  const [articles, total] = await prisma.$transaction([
+    prisma.article.findMany({
+      where,
+      orderBy: {
+        publishedAt: "desc",
+      },
+      skip,
+      take,
+      include: articleInclude,
+    }),
+    prisma.article.count({ where }),
+  ])
+
+  return response.json({
+    articles: articles.map(mapArticle),
+    meta: makePaginationMeta(total, page, perPage),
+  })
 }
 
 export async function getArticle(request: Request, response: Response) {
@@ -142,10 +323,12 @@ export async function createArticle(request: Request, response: Response) {
       title: parsed.data.title,
       summary: parsed.data.summary,
       content: parsed.data.content,
-      category: parsed.data.category,
+      category: getCategoryData(parsed.data.category),
       bannerImage: toPrismaBytes(request.file.buffer),
       bannerMimeType: request.file.mimetype,
-      authorId: request.user.id,
+      author: {
+        connect: { id: request.user.id },
+      },
       tags: {
         create: parsed.data.tags.map((name) => ({
           tag: {
@@ -201,7 +384,7 @@ export async function updateArticle(request: Request, response: Response) {
       title: parsed.data.title,
       summary: parsed.data.summary,
       content: parsed.data.content,
-      category: parsed.data.category,
+      category: getCategoryData(parsed.data.category),
       tags: {
         deleteMany: {},
         create: parsed.data.tags.map((name) => ({
