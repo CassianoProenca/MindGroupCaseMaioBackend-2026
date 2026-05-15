@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(120)
+  email        String    @unique @db.VarChar(160)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  articles     Article[]
+
+  @@map("users")
+}
+
+model Article {
+  id             Int      @id @default(autoincrement())
+  title          String   @db.VarChar(180)
+  content        String   @db.Text
+  bannerImage    Bytes?   @map("banner_image") @db.LongBlob
+  bannerMimeType String?  @map("banner_mime_type") @db.VarChar(80)
+  authorId       Int      @map("author_id")
+  publishedAt    DateTime @default(now()) @map("published_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@map("articles")
+}
