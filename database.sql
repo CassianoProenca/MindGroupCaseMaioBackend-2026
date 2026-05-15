@@ -1,138 +1,203 @@
-CREATE DATABASE IF NOT EXISTS mind_blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+﻿-- MySQL dump 10.13  Distrib 8.4.9, for Linux (x86_64)
+--
+-- Host: localhost    Database: mind_blog
+-- ------------------------------------------------------
+-- Server version	8.4.9
 
-USE mind_blog;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-DROP TABLE IF EXISTS article_likes;
-DROP TABLE IF EXISTS comments;
-DROP TABLE IF EXISTS article_tags;
-DROP TABLE IF EXISTS tags;
-DROP TABLE IF EXISTS articles;
-DROP TABLE IF EXISTS users;
+--
+-- Current Database: `mind_blog`
+--
 
-CREATE TABLE users (
-  id INT NOT NULL AUTO_INCREMENT,
-  name VARCHAR(120) NOT NULL,
-  email VARCHAR(160) NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  bio TEXT NULL,
-  avatar_url VARCHAR(500) NULL,
-  role VARCHAR(40) NOT NULL DEFAULT 'AUTHOR',
-  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  updated_at DATETIME(3) NOT NULL,
-  UNIQUE KEY users_email_key (email),
-  PRIMARY KEY (id)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `mind_blog` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
-CREATE TABLE articles (
-  id INT NOT NULL AUTO_INCREMENT,
-  title VARCHAR(180) NOT NULL,
-  summary VARCHAR(280) NULL,
-  content TEXT NOT NULL,
-  category VARCHAR(120) NULL,
-  banner_image LONGBLOB NULL,
-  banner_mime_type VARCHAR(80) NULL,
-  views_count INT NOT NULL DEFAULT 0,
-  likes_count INT NOT NULL DEFAULT 0,
-  author_id INT NOT NULL,
-  published_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  updated_at DATETIME(3) NOT NULL,
-  INDEX articles_author_id_idx (author_id),
-  PRIMARY KEY (id),
-  CONSTRAINT articles_author_id_fkey FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `mind_blog`;
 
-CREATE TABLE tags (
-  id INT NOT NULL AUTO_INCREMENT,
-  name VARCHAR(80) NOT NULL,
-  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  UNIQUE KEY tags_name_key (name),
-  PRIMARY KEY (id)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--
+-- Table structure for table `_prisma_migrations`
+--
 
-CREATE TABLE article_tags (
-  article_id INT NOT NULL,
-  tag_id INT NOT NULL,
-  INDEX article_tags_tag_id_idx (tag_id),
-  PRIMARY KEY (article_id, tag_id),
-  CONSTRAINT article_tags_article_id_fkey FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT article_tags_tag_id_fkey FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE ON UPDATE CASCADE
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS `_prisma_migrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `_prisma_migrations` (
+  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `checksum` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `finished_at` datetime(3) DEFAULT NULL,
+  `migration_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `logs` text COLLATE utf8mb4_unicode_ci,
+  `rolled_back_at` datetime(3) DEFAULT NULL,
+  `started_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `applied_steps_count` int unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-CREATE TABLE comments (
-  id INT NOT NULL AUTO_INCREMENT,
-  content TEXT NOT NULL,
-  article_id INT NOT NULL,
-  author_id INT NOT NULL,
-  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  updated_at DATETIME(3) NOT NULL,
-  INDEX comments_article_id_idx (article_id),
-  INDEX comments_author_id_idx (author_id),
-  PRIMARY KEY (id),
-  CONSTRAINT comments_article_id_fkey FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT comments_author_id_fkey FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--
+-- Table structure for table `article_likes`
+--
 
-CREATE TABLE article_likes (
-  id INT NOT NULL AUTO_INCREMENT,
-  article_id INT NOT NULL,
-  user_id INT NOT NULL,
-  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  UNIQUE KEY article_likes_article_id_user_id_key (article_id, user_id),
-  INDEX article_likes_user_id_idx (user_id),
-  PRIMARY KEY (id),
-  CONSTRAINT article_likes_article_id_fkey FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT article_likes_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS `article_likes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `article_likes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `article_id` int NOT NULL,
+  `user_id` int NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `article_likes_article_id_user_id_key` (`article_id`,`user_id`),
+  KEY `article_likes_user_id_idx` (`user_id`),
+  CONSTRAINT `article_likes_article_id_fkey` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `article_likes_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-INSERT INTO users (id, name, email, password_hash, bio, avatar_url, role, created_at, updated_at) VALUES
-  (1, 'Cassiano Proenca', 'cassiano@example.com', '$2b$10$ZWoUaao5FbSATsh7sjD8decylbaGc3BMIrQF8Om32QfhAPDDFRYcK', 'Desenvolvedor Full Stack apaixonado por tecnologia e inovacao.', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e', 'ADMIN', NOW(3), NOW(3));
+--
+-- Table structure for table `article_tags`
+--
 
-INSERT INTO articles (id, title, summary, content, category, banner_image, banner_mime_type, views_count, likes_count, author_id, published_at, updated_at) VALUES
-  (
-    1,
-    'Como um blog aproxima produto e comunidade',
-    'Uma visao pratica de como conteudo tecnico fortalece produto, marca e comunidade.',
-    'Um blog bem estruturado ajuda a registrar novidades, bastidores e aprendizados de um produto. Neste primeiro artigo, a proposta e mostrar uma API simples, segura e preparada para integracao com o frontend.',
-    'Desenvolvimento web',
-    UNHEX('89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082'),
-    'image/png',
-    122,
-    1,
-    1,
-    NOW(3),
-    NOW(3)
-  ),
-  (
-    2,
-    'Autenticacao e conteudo sob controle',
-    'Login, permissoes e autoria para manter a publicacao segura sem pesar na experiencia.',
-    'Criar, editar e remover artigos exige login, enquanto leitura e listagem seguem publicas. Esse desenho atende o minimo do case e deixa a experiencia simples para usuarios e avaliadores.',
-    'Desenvolvimento backend',
-    UNHEX('89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082'),
-    'image/png',
-    84,
-    2,
-    1,
-    NOW(3),
-    NOW(3)
-  );
+DROP TABLE IF EXISTS `article_tags`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `article_tags` (
+  `article_id` int NOT NULL,
+  `tag_id` int NOT NULL,
+  PRIMARY KEY (`article_id`,`tag_id`),
+  KEY `article_tags_tag_id_idx` (`tag_id`),
+  CONSTRAINT `article_tags_article_id_fkey` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `article_tags_tag_id_fkey` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-INSERT INTO tags (id, name, created_at) VALUES
-  (1, 'Typescript', NOW(3)),
-  (2, 'Backend', NOW(3)),
-  (3, 'Produto', NOW(3)),
-  (4, 'Autenticacao', NOW(3)),
-  (5, 'JWT', NOW(3)),
-  (6, 'Express', NOW(3));
+--
+-- Table structure for table `articles`
+--
 
-INSERT INTO article_tags (article_id, tag_id) VALUES
-  (1, 1),
-  (1, 2),
-  (1, 3),
-  (2, 4),
-  (2, 5),
-  (2, 6);
+DROP TABLE IF EXISTS `articles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `articles` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(180) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `banner_image` longblob,
+  `banner_mime_type` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `author_id` int NOT NULL,
+  `published_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  `summary` varchar(280) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `views_count` int NOT NULL DEFAULT '0',
+  `likes_count` int NOT NULL DEFAULT '0',
+  `category_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `articles_author_id_idx` (`author_id`),
+  KEY `articles_category_id_idx` (`category_id`),
+  CONSTRAINT `articles_author_id_fkey` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `articles_category_id_fkey` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-INSERT INTO comments (content, article_id, author_id, created_at, updated_at) VALUES
-  ('Excelente artigo! Muito bem explicado sobre as decisoes tecnicas do projeto.', 1, 1, NOW(3), NOW(3)),
-  ('Gostei da separacao entre leitura publica e escrita autenticada.', 1, 1, NOW(3), NOW(3));
+--
+-- Table structure for table `categories`
+--
+
+DROP TABLE IF EXISTS `categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `categories` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(140) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `categories_name_key` (`name`),
+  UNIQUE KEY `categories_slug_key` (`slug`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `comments`
+--
+
+DROP TABLE IF EXISTS `comments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `comments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `article_id` int NOT NULL,
+  `author_id` int NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `comments_article_id_idx` (`article_id`),
+  KEY `comments_author_id_idx` (`author_id`),
+  CONSTRAINT `comments_article_id_fkey` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `comments_author_id_fkey` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tags`
+--
+
+DROP TABLE IF EXISTS `tags`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tags` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `tags_name_key` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(160) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` datetime(3) NOT NULL,
+  `bio` text COLLATE utf8mb4_unicode_ci,
+  `avatar_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `role` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'AUTHOR',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_email_key` (`email`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping routines for database 'mind_blog'
+--
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-05-15 22:49:07
