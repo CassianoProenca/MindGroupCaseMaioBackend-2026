@@ -4,6 +4,7 @@ import express, { type ErrorRequestHandler } from "express"
 import { env } from "./config/env.js"
 import { articleRoutes } from "./routes/articleRoutes.js"
 import { authRoutes } from "./routes/authRoutes.js"
+import { profileRoutes } from "./routes/profileRoutes.js"
 
 export const app = express()
 
@@ -16,6 +17,7 @@ app.get("/health", (_request, response) => {
 
 app.use("/auth", authRoutes)
 app.use("/articles", articleRoutes)
+app.use("/profile", profileRoutes)
 
 const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
   const message = error instanceof Error ? error.message : "Erro interno do servidor."
