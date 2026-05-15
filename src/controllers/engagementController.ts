@@ -49,6 +49,35 @@ export async function registerArticleView(request: Request, response: Response) 
   return response.json({ article: updatedArticle })
 }
 
+export async function getArticleLikeStatus(request: Request, response: Response) {
+  if (!request.user) {
+    return sendError(response, 401, "Usuario nao autenticado.")
+  }
+
+  const articleId = getArticleId(request)
+
+  if (!articleId) {
+    return sendError(response, 400, "Id do artigo invalido.")
+  }
+
+  const article = await articleExists(articleId)
+
+  if (!article) {
+    return sendError(response, 404, "Artigo nao encontrado.")
+  }
+
+  const like = await prisma.articleLike.findUnique({
+    where: {
+      articleId_userId: {
+        articleId,
+        userId: request.user.id,
+      },
+    },
+  })
+
+  return response.json({ article, liked: Boolean(like) })
+}
+
 export async function likeArticle(request: Request, response: Response) {
   if (!request.user) {
     return sendError(response, 401, "Usuario nao autenticado.")
