@@ -5,6 +5,7 @@ import { z } from "zod"
 import { prisma } from "../config/prisma.js"
 import { sendError } from "../utils/http.js"
 import { getPagination, getSearch, makePaginationMeta } from "../utils/pagination.js"
+import { getReadingTimeMinutes } from "../utils/readingTime.js"
 
 const articleSchema = z.object({
   title: z.string().trim().min(4, "Titulo deve ter pelo menos 4 caracteres."),
@@ -71,6 +72,7 @@ function mapArticle(article: ArticleWithAuthor) {
     bannerUrl: article.bannerImage ? `/articles/${article.id}/banner` : null,
     viewsCount: article.viewsCount,
     likesCount: article.likesCount,
+    readingTimeMinutes: getReadingTimeMinutes(article.content),
     publishedAt: article.publishedAt,
     updatedAt: article.updatedAt,
     author: article.author,

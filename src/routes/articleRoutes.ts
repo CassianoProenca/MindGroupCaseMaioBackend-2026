@@ -13,8 +13,14 @@ import {
   updateArticle,
 } from "../controllers/articleController.js"
 import { createComment, listComments } from "../controllers/commentController.js"
-import { getArticleLikeStatus, likeArticle, registerArticleView, unlikeArticle } from "../controllers/engagementController.js"
-import { authenticate } from "../middlewares/auth.js"
+import {
+  getArticleLikeStatus,
+  likeArticle,
+  registerArticleRead,
+  registerArticleView,
+  unlikeArticle,
+} from "../controllers/engagementController.js"
+import { authenticate, optionalAuthenticate } from "../middlewares/auth.js"
 import { upload } from "../middlewares/upload.js"
 
 export const articleRoutes = Router()
@@ -30,6 +36,7 @@ articleRoutes.get("/:id/comments", listComments)
 articleRoutes.get("/:id/like", authenticate, getArticleLikeStatus)
 articleRoutes.post("/:id/comments", authenticate, createComment)
 articleRoutes.post("/:id/view", registerArticleView)
+articleRoutes.post("/:id/read", optionalAuthenticate, registerArticleRead)
 articleRoutes.post("/:id/like", authenticate, likeArticle)
 articleRoutes.delete("/:id/like", authenticate, unlikeArticle)
 articleRoutes.post("/", authenticate, upload.single("banner"), createArticle)
