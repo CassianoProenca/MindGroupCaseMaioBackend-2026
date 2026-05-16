@@ -124,6 +124,7 @@ export async function getMyDashboardMetrics(request: Request, response: Response
       _count: {
         select: {
           likes: true,
+          comments: true,
         },
       },
       category: {
@@ -165,6 +166,7 @@ export async function getMyDashboardMetrics(request: Request, response: Response
         bannerUrl: article.bannerImage ? `/articles/${article.id}/banner` : null,
         viewsCount: article.viewsCount,
         likesCount: article._count.likes,
+        commentsCount: article._count.comments,
         readsCount: article.reads.length,
         totalReadSeconds,
         averageReadSeconds,
