@@ -1,9 +1,14 @@
+import type { Prisma } from "@prisma/client"
 import type { Request, Response } from "express"
 import { z } from "zod"
 
 import { prisma } from "../config/prisma.js"
 import { sendError } from "../utils/http.js"
+import { makePaginationMeta } from "../utils/pagination.js"
 import { getReadingTimeMinutes } from "../utils/readingTime.js"
+
+const MAX_RECENT_ACTIVITY_PER_PAGE = 50
+const DEFAULT_RECENT_ACTIVITY_PER_PAGE = 3
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Nome deve ter pelo menos 2 caracteres."),
@@ -178,13 +183,9 @@ export async function getMyDashboardMetrics(request: Request, response: Response
     })
     .slice(0, 5)
 
-  const recentActivity = articles.slice(0, 5).map((article) => ({
-    id: article.id,
-    title: article.title,
-    category: article.category?.name ?? null,
-    updatedAt: article.updatedAt,
-    type: article.publishedAt.getTime() === article.updatedAt.getTime() ? "published" : "updated",
-  }))
+  const commentsCount = await prisma.comment.count({
+    where: { article: { authorId: request.user.id } },
+  })
 
   return response.json({
     metrics: {
@@ -194,7 +195,7 @@ export async function getMyDashboardMetrics(request: Request, response: Response
         likes: totals.likes,
         reads: totals.reads,
         totalReadSeconds: totals.readSeconds,
-        engagement: totals.views + totals.likes,
+        engagement: commentsCount,
         averageReadSeconds: totals.reads > 0 ? Math.round(totals.readSeconds / totals.reads) : 0,
         averageReadingTimeMinutes:
           articles.length > 0
@@ -208,7 +209,50 @@ export async function getMyDashboardMetrics(request: Request, response: Response
       },
       articleMetrics,
       topArticles,
-      recentActivity,
     },
+  })
+}
+
+export async function getMyRecentActivity(request: Request, response: Response) {
+  if (!request.user) {
+    return sendError(response, 401, "Usuario nao autenticado.")
+  }
+
+  const requestedPage = Number(request.query.page)
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
+
+  const requestedPerPage = Number(request.query.perPage)
+  const perPage = Math.min(
+    Number.isInteger(requestedPerPage) && requestedPerPage > 0 ? requestedPerPage : DEFAULT_RECENT_ACTIVITY_PER_PAGE,
+    MAX_RECENT_ACTIVITY_PER_PAGE,
+  )
+
+  const where: Prisma.CommentWhereInput = {
+    article: { authorId: request.user.id },
+  }
+
+  const [comments, total] = await prisma.$transaction([
+    prisma.comment.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+      include: {
+        author: { select: { id: true, name: true, avatarUrl: true } },
+        article: { select: { id: true, title: true } },
+      },
+    }),
+    prisma.comment.count({ where }),
+  ])
+
+  return response.json({
+    activity: comments.map((comment) => ({
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      author: comment.author,
+      article: comment.article,
+    })),
+    meta: makePaginationMeta(total, page, perPage),
   })
 }
