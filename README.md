@@ -38,8 +38,10 @@ A API ficara em `http://localhost:3333`.
 
 ## Login de teste
 
-- Email: `cassiano@example.com`
+- Email: `john@example.com`
 - Senha: `123456`
+
+O seed tambem cria 6 usuarios adicionais (Marie Smith, Pedro Costa, Ana Silva, Lucas Almeida, Fernanda Lima, Bruno Tavares) com a mesma senha, usados como comentaristas em 10 artigos pre-populados.
 
 ## Scripts uteis
 
@@ -68,8 +70,8 @@ Exemplo de cadastro:
 
 ```json
 {
-  "name": "Cassiano Proenca",
-  "email": "cassiano@example.com",
+  "name": "John Doe",
+  "email": "john@example.com",
   "password": "123456"
 }
 ```
