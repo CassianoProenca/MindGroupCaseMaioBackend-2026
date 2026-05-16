@@ -48,6 +48,40 @@ async function main() {
     },
   })
 
+  const marie = await prisma.user.upsert({
+    where: { email: "marie@example.com" },
+    update: {
+      bio: "Front-end engineer apaixonada por design systems.",
+      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+      role: "AUTHOR",
+    },
+    create: {
+      name: "Marie Smith",
+      email: "marie@example.com",
+      passwordHash,
+      bio: "Front-end engineer apaixonada por design systems.",
+      avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+      role: "AUTHOR",
+    },
+  })
+
+  const pedro = await prisma.user.upsert({
+    where: { email: "pedro@example.com" },
+    update: {
+      bio: "Backend developer e entusiasta de DevOps.",
+      avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+      role: "AUTHOR",
+    },
+    create: {
+      name: "Pedro Costa",
+      email: "pedro@example.com",
+      passwordHash,
+      bio: "Backend developer e entusiasta de DevOps.",
+      avatarUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+      role: "AUTHOR",
+    },
+  })
+
   await prisma.article.deleteMany({
     where: {
       authorId: user.id,
@@ -81,7 +115,7 @@ async function main() {
     },
   })
 
-  await prisma.article.create({
+  const secondArticle = await prisma.article.create({
     data: {
       title: "Autenticacao e conteudo sob controle",
       summary: "Login, permissoes e autoria para manter a publicacao segura sem pesar na experiencia.",
@@ -108,17 +142,73 @@ async function main() {
     },
   })
 
+  const nowMs = Date.now()
+  const minute = 60 * 1000
+
   await prisma.comment.createMany({
     data: [
       {
         content: "Excelente artigo! Muito bem explicado sobre as decisoes tecnicas do projeto.",
         articleId: firstArticle.id,
-        authorId: user.id,
+        authorId: marie.id,
+        createdAt: new Date(nowMs - 5 * minute),
+        updatedAt: new Date(nowMs - 5 * minute),
       },
       {
         content: "Gostei da separacao entre leitura publica e escrita autenticada.",
         articleId: firstArticle.id,
+        authorId: pedro.id,
+        createdAt: new Date(nowMs - 30 * minute),
+        updatedAt: new Date(nowMs - 30 * minute),
+      },
+      {
+        content: "Comecei a usar essa arquitetura em outro projeto e funcionou bem demais.",
+        articleId: firstArticle.id,
+        authorId: marie.id,
+        createdAt: new Date(nowMs - 2 * 60 * minute),
+        updatedAt: new Date(nowMs - 2 * 60 * minute),
+      },
+      {
+        content: "Curti a estrategia de seed para demonstrar dados reais ao avaliador.",
+        articleId: firstArticle.id,
         authorId: user.id,
+        createdAt: new Date(nowMs - 6 * 60 * minute),
+        updatedAt: new Date(nowMs - 6 * 60 * minute),
+      },
+      {
+        content: "Top demais, ja salvei nos favoritos.",
+        articleId: firstArticle.id,
+        authorId: pedro.id,
+        createdAt: new Date(nowMs - 24 * 60 * minute),
+        updatedAt: new Date(nowMs - 24 * 60 * minute),
+      },
+      {
+        content: "Concordo com tudo, especialmente o tradeoff dos comentarios.",
+        articleId: firstArticle.id,
+        authorId: marie.id,
+        createdAt: new Date(nowMs - 48 * 60 * minute),
+        updatedAt: new Date(nowMs - 48 * 60 * minute),
+      },
+      {
+        content: "Faltou cobrir refresh tokens — talvez num proximo post?",
+        articleId: secondArticle.id,
+        authorId: pedro.id,
+        createdAt: new Date(nowMs - 10 * minute),
+        updatedAt: new Date(nowMs - 10 * minute),
+      },
+      {
+        content: "JWT stateless e a melhor escolha mesmo pra MVP.",
+        articleId: secondArticle.id,
+        authorId: marie.id,
+        createdAt: new Date(nowMs - 90 * minute),
+        updatedAt: new Date(nowMs - 90 * minute),
+      },
+      {
+        content: "Fluxo bem desenhado. Parabens!",
+        articleId: secondArticle.id,
+        authorId: pedro.id,
+        createdAt: new Date(nowMs - 5 * 60 * minute),
+        updatedAt: new Date(nowMs - 5 * 60 * minute),
       },
     ],
   })

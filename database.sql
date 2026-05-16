@@ -42,7 +42,7 @@ CREATE TABLE `_prisma_migrations` (
 
 LOCK TABLES `_prisma_migrations` WRITE;
 /*!40000 ALTER TABLE `_prisma_migrations` DISABLE KEYS */;
-INSERT INTO `_prisma_migrations` VALUES ('2bac2c83-b4b6-489b-88c3-b517d0f8483e','66a01e93a088e1589da31f4e48996f74d548e82f6b097f95d021d06dcfc10743','2026-05-16 01:47:35.982','20260515170000_init',NULL,NULL,'2026-05-16 01:47:35.884',1),('36c80856-7815-4ee5-ba7b-9f14dcf34efe','295e02ef7ca3a774488cbc2e48721d52ddcf133b48ad989331a81c229aecd434','2026-05-16 01:47:36.826','20260515211500_article_reads',NULL,NULL,'2026-05-16 01:47:36.672',1),('76530930-7e4a-43eb-963b-c91005bc7fd6','bf468ed6f51d447cb504b36cf9e7c5b760f4aa2278e054eae45d2e902803290a','2026-05-16 01:47:36.470','20260515183000_rich_blog_fields',NULL,NULL,'2026-05-16 01:47:35.985',1),('8bd38718-edcb-4ccc-a851-99964fd87857','d8f101fa0351a40ea1ab4588787a59565babc6692f2607f09cc402ce89cfa69d','2026-05-16 01:47:36.669','20260515203000_categories_and_pagination',NULL,NULL,'2026-05-16 01:47:36.473',1);
+INSERT INTO `_prisma_migrations` VALUES ('250ada2a-5194-4526-a270-fe71b468fddd','295e02ef7ca3a774488cbc2e48721d52ddcf133b48ad989331a81c229aecd434','2026-05-16 23:19:58.179','20260515211500_article_reads',NULL,NULL,'2026-05-16 23:19:58.024',1),('cc6ba81b-008b-4c7a-b1cd-a5d5ac027abb','bf468ed6f51d447cb504b36cf9e7c5b760f4aa2278e054eae45d2e902803290a','2026-05-16 23:19:57.822','20260515183000_rich_blog_fields',NULL,NULL,'2026-05-16 23:19:57.320',1),('d17afce2-93b7-4b70-aafa-0846f267c1ff','66a01e93a088e1589da31f4e48996f74d548e82f6b097f95d021d06dcfc10743','2026-05-16 23:19:57.314','20260515170000_init',NULL,NULL,'2026-05-16 23:19:57.208',1),('f1cb65c4-3537-4028-b626-196876f9163a','d8f101fa0351a40ea1ab4588787a59565babc6692f2607f09cc402ce89cfa69d','2026-05-16 23:19:58.022','20260515203000_categories_and_pagination',NULL,NULL,'2026-05-16 23:19:57.826',1);
 /*!40000 ALTER TABLE `_prisma_migrations` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -168,7 +168,7 @@ CREATE TABLE `articles` (
 
 LOCK TABLES `articles` WRITE;
 /*!40000 ALTER TABLE `articles` DISABLE KEYS */;
-INSERT INTO `articles` VALUES (1,'Como um blog aproxima produto e comunidade','Um blog bem estruturado ajuda a registrar novidades, bastidores e aprendizados de um produto. Neste primeiro artigo, a proposta e mostrar uma API simples, segura e preparada para integracao com o frontend.',0x89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082,'image/png',1,'2026-05-16 01:48:00.619','2026-05-16 01:48:00.619','Uma visao pratica de como conteudo tecnico fortalece produto, marca e comunidade.',122,1,1),(2,'Autenticacao e conteudo sob controle','Criar, editar e remover artigos exige login, enquanto leitura e listagem seguem publicas. Esse desenho atende o minimo do case e deixa a experiencia simples para usuarios e avaliadores.',0x89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082,'image/png',1,'2026-05-16 01:48:00.630','2026-05-16 01:48:00.630','Login, permissoes e autoria para manter a publicacao segura sem pesar na experiencia.',84,2,2);
+INSERT INTO `articles` VALUES (1,'Como um blog aproxima produto e comunidade','Um blog bem estruturado ajuda a registrar novidades, bastidores e aprendizados de um produto. Neste primeiro artigo, a proposta e mostrar uma API simples, segura e preparada para integracao com o frontend.',0x89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082,'image/png',1,'2026-05-16 23:20:14.217','2026-05-16 23:20:14.217','Uma visao pratica de como conteudo tecnico fortalece produto, marca e comunidade.',122,1,1),(2,'Autenticacao e conteudo sob controle','Criar, editar e remover artigos exige login, enquanto leitura e listagem seguem publicas. Esse desenho atende o minimo do case e deixa a experiencia simples para usuarios e avaliadores.',0x89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082,'image/png',1,'2026-05-16 23:20:14.230','2026-05-16 23:20:14.230','Login, permissoes e autoria para manter a publicacao segura sem pesar na experiencia.',84,2,2);
 /*!40000 ALTER TABLE `articles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -197,7 +197,7 @@ CREATE TABLE `categories` (
 
 LOCK TABLES `categories` WRITE;
 /*!40000 ALTER TABLE `categories` DISABLE KEYS */;
-INSERT INTO `categories` VALUES (1,'Desenvolvimento web','desenvolvimento-web','2026-05-16 01:48:00.619','2026-05-16 01:48:00.619'),(2,'Desenvolvimento backend','desenvolvimento-backend','2026-05-16 01:48:00.630','2026-05-16 01:48:00.630');
+INSERT INTO `categories` VALUES (1,'Desenvolvimento web','desenvolvimento-web','2026-05-16 23:20:14.217','2026-05-16 23:20:14.217'),(2,'Desenvolvimento backend','desenvolvimento-backend','2026-05-16 23:20:14.230','2026-05-16 23:20:14.230');
 /*!40000 ALTER TABLE `categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -220,7 +220,7 @@ CREATE TABLE `comments` (
   KEY `comments_author_id_idx` (`author_id`),
   CONSTRAINT `comments_article_id_fkey` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `comments_author_id_fkey` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -229,7 +229,7 @@ CREATE TABLE `comments` (
 
 LOCK TABLES `comments` WRITE;
 /*!40000 ALTER TABLE `comments` DISABLE KEYS */;
-INSERT INTO `comments` VALUES (1,'Excelente artigo! Muito bem explicado sobre as decisoes tecnicas do projeto.',1,1,'2026-05-16 01:48:00.639','2026-05-16 01:48:00.639'),(2,'Gostei da separacao entre leitura publica e escrita autenticada.',1,1,'2026-05-16 01:48:00.639','2026-05-16 01:48:00.639');
+INSERT INTO `comments` VALUES (1,'Excelente artigo! Muito bem explicado sobre as decisoes tecnicas do projeto.',1,2,'2026-05-16 23:15:14.238','2026-05-16 23:15:14.238'),(2,'Gostei da separacao entre leitura publica e escrita autenticada.',1,3,'2026-05-16 22:50:14.238','2026-05-16 22:50:14.238'),(3,'Comecei a usar essa arquitetura em outro projeto e funcionou bem demais.',1,2,'2026-05-16 21:20:14.238','2026-05-16 21:20:14.238'),(4,'Curti a estrategia de seed para demonstrar dados reais ao avaliador.',1,1,'2026-05-16 17:20:14.238','2026-05-16 17:20:14.238'),(5,'Top demais, ja salvei nos favoritos.',1,3,'2026-05-15 23:20:14.238','2026-05-15 23:20:14.238'),(6,'Concordo com tudo, especialmente o tradeoff dos comentarios.',1,2,'2026-05-14 23:20:14.238','2026-05-14 23:20:14.238'),(7,'Faltou cobrir refresh tokens — talvez num proximo post?',2,3,'2026-05-16 23:10:14.238','2026-05-16 23:10:14.238'),(8,'JWT stateless e a melhor escolha mesmo pra MVP.',2,2,'2026-05-16 21:50:14.238','2026-05-16 21:50:14.238'),(9,'Fluxo bem desenhado. Parabens!',2,3,'2026-05-16 18:20:14.238','2026-05-16 18:20:14.238');
 /*!40000 ALTER TABLE `comments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -255,7 +255,7 @@ CREATE TABLE `tags` (
 
 LOCK TABLES `tags` WRITE;
 /*!40000 ALTER TABLE `tags` DISABLE KEYS */;
-INSERT INTO `tags` VALUES (1,'Produto','2026-05-16 01:48:00.619'),(2,'Backend','2026-05-16 01:48:00.619'),(3,'Typescript','2026-05-16 01:48:00.619'),(4,'Express','2026-05-16 01:48:00.630'),(5,'JWT','2026-05-16 01:48:00.630'),(6,'Autenticacao','2026-05-16 01:48:00.630');
+INSERT INTO `tags` VALUES (1,'Produto','2026-05-16 23:20:14.217'),(2,'Backend','2026-05-16 23:20:14.217'),(3,'Typescript','2026-05-16 23:20:14.217'),(4,'Express','2026-05-16 23:20:14.230'),(5,'JWT','2026-05-16 23:20:14.230'),(6,'Autenticacao','2026-05-16 23:20:14.230');
 /*!40000 ALTER TABLE `tags` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -278,7 +278,7 @@ CREATE TABLE `users` (
   `role` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'AUTHOR',
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_key` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -287,7 +287,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Cassiano Proenca','cassiano@example.com','$2b$10$H1Dr3KBKLr4DePbuT2eEOuElcjcx5dYWwKQoI8Hw3hhXX6RET3vt.','2026-05-16 01:48:00.593','2026-05-16 01:48:00.593','Desenvolvedor Full Stack apaixonado por tecnologia e inovacao.','https://images.unsplash.com/photo-1472099645785-5658abf4ff4e','ADMIN');
+INSERT INTO `users` VALUES (1,'Cassiano Proenca','cassiano@example.com','$2b$10$CD.FLW43Rr2utgSeYiDxP.k48xa33AeGrm3sRXsO6F9LEjYUOxvMm','2026-05-16 23:20:14.193','2026-05-16 23:20:14.193','Desenvolvedor Full Stack apaixonado por tecnologia e inovacao.','https://images.unsplash.com/photo-1472099645785-5658abf4ff4e','ADMIN'),(2,'Marie Smith','marie@example.com','$2b$10$CD.FLW43Rr2utgSeYiDxP.k48xa33AeGrm3sRXsO6F9LEjYUOxvMm','2026-05-16 23:20:14.203','2026-05-16 23:20:14.203','Front-end engineer apaixonada por design systems.','https://images.unsplash.com/photo-1494790108377-be9c29b29330','AUTHOR'),(3,'Pedro Costa','pedro@example.com','$2b$10$CD.FLW43Rr2utgSeYiDxP.k48xa33AeGrm3sRXsO6F9LEjYUOxvMm','2026-05-16 23:20:14.209','2026-05-16 23:20:14.209','Backend developer e entusiasta de DevOps.','https://images.unsplash.com/photo-1535713875002-d1d0cf377fde','AUTHOR');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -300,4 +300,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-16  1:48:25
+-- Dump completed on 2026-05-16 23:20:44
