@@ -47,6 +47,11 @@ const articleInclude = {
       tag: true,
     },
   },
+  _count: {
+    select: {
+      comments: true,
+    },
+  },
 } as const
 
 type ArticleWithAuthor = Prisma.ArticleGetPayload<{ include: typeof articleInclude }>
@@ -72,6 +77,7 @@ function mapArticle(article: ArticleWithAuthor) {
     bannerUrl: article.bannerImage ? `/articles/${article.id}/banner` : null,
     viewsCount: article.viewsCount,
     likesCount: article.likesCount,
+    commentsCount: article._count.comments,
     readingTimeMinutes: getReadingTimeMinutes(article.content),
     publishedAt: article.publishedAt,
     updatedAt: article.updatedAt,
