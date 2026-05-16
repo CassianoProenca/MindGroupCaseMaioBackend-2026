@@ -1,4 +1,5 @@
-﻿-- MySQL dump 10.13  Distrib 8.4.9, for Linux (x86_64)
+mysqldump: [Warning] Using a password on the command line interface can be insecure.
+-- MySQL dump 10.13  Distrib 8.4.9, for Linux (x86_64)
 --
 -- Host: localhost    Database: mind_blog
 -- ------------------------------------------------------
@@ -14,14 +15,6 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Current Database: `mind_blog`
---
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `mind_blog` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-
-USE `mind_blog`;
 
 --
 -- Table structure for table `_prisma_migrations`
@@ -44,6 +37,16 @@ CREATE TABLE `_prisma_migrations` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `_prisma_migrations`
+--
+
+LOCK TABLES `_prisma_migrations` WRITE;
+/*!40000 ALTER TABLE `_prisma_migrations` DISABLE KEYS */;
+INSERT INTO `_prisma_migrations` VALUES ('2bac2c83-b4b6-489b-88c3-b517d0f8483e','66a01e93a088e1589da31f4e48996f74d548e82f6b097f95d021d06dcfc10743','2026-05-16 01:47:35.982','20260515170000_init',NULL,NULL,'2026-05-16 01:47:35.884',1),('36c80856-7815-4ee5-ba7b-9f14dcf34efe','295e02ef7ca3a774488cbc2e48721d52ddcf133b48ad989331a81c229aecd434','2026-05-16 01:47:36.826','20260515211500_article_reads',NULL,NULL,'2026-05-16 01:47:36.672',1),('76530930-7e4a-43eb-963b-c91005bc7fd6','bf468ed6f51d447cb504b36cf9e7c5b760f4aa2278e054eae45d2e902803290a','2026-05-16 01:47:36.470','20260515183000_rich_blog_fields',NULL,NULL,'2026-05-16 01:47:35.985',1),('8bd38718-edcb-4ccc-a851-99964fd87857','d8f101fa0351a40ea1ab4588787a59565babc6692f2607f09cc402ce89cfa69d','2026-05-16 01:47:36.669','20260515203000_categories_and_pagination',NULL,NULL,'2026-05-16 01:47:36.473',1);
+/*!40000 ALTER TABLE `_prisma_migrations` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `article_likes`
 --
 
@@ -60,8 +63,17 @@ CREATE TABLE `article_likes` (
   KEY `article_likes_user_id_idx` (`user_id`),
   CONSTRAINT `article_likes_article_id_fkey` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `article_likes_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `article_likes`
+--
+
+LOCK TABLES `article_likes` WRITE;
+/*!40000 ALTER TABLE `article_likes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `article_likes` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `article_reads`
@@ -87,6 +99,15 @@ CREATE TABLE `article_reads` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `article_reads`
+--
+
+LOCK TABLES `article_reads` WRITE;
+/*!40000 ALTER TABLE `article_reads` DISABLE KEYS */;
+/*!40000 ALTER TABLE `article_reads` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `article_tags`
 --
 
@@ -102,6 +123,16 @@ CREATE TABLE `article_tags` (
   CONSTRAINT `article_tags_tag_id_fkey` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `article_tags`
+--
+
+LOCK TABLES `article_tags` WRITE;
+/*!40000 ALTER TABLE `article_tags` DISABLE KEYS */;
+INSERT INTO `article_tags` VALUES (1,1),(1,2),(1,3),(2,4),(2,5),(2,6);
+/*!40000 ALTER TABLE `article_tags` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `articles`
@@ -132,6 +163,16 @@ CREATE TABLE `articles` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `articles`
+--
+
+LOCK TABLES `articles` WRITE;
+/*!40000 ALTER TABLE `articles` DISABLE KEYS */;
+INSERT INTO `articles` VALUES (1,'Como um blog aproxima produto e comunidade','Um blog bem estruturado ajuda a registrar novidades, bastidores e aprendizados de um produto. Neste primeiro artigo, a proposta e mostrar uma API simples, segura e preparada para integracao com o frontend.',0x89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082,'image/png',1,'2026-05-16 01:48:00.619','2026-05-16 01:48:00.619','Uma visao pratica de como conteudo tecnico fortalece produto, marca e comunidade.',122,1,1),(2,'Autenticacao e conteudo sob controle','Criar, editar e remover artigos exige login, enquanto leitura e listagem seguem publicas. Esse desenho atende o minimo do case e deixa a experiencia simples para usuarios e avaliadores.',0x89504E470D0A1A0A0000000D49484452000000010000000108060000001F15C4890000000A49444154789C6360000002000100FFFF03000006000557BFAB5D0000000049454E44AE426082,'image/png',1,'2026-05-16 01:48:00.630','2026-05-16 01:48:00.630','Login, permissoes e autoria para manter a publicacao segura sem pesar na experiencia.',84,2,2);
+/*!40000 ALTER TABLE `articles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `categories`
 --
 
@@ -149,6 +190,16 @@ CREATE TABLE `categories` (
   UNIQUE KEY `categories_slug_key` (`slug`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `categories`
+--
+
+LOCK TABLES `categories` WRITE;
+/*!40000 ALTER TABLE `categories` DISABLE KEYS */;
+INSERT INTO `categories` VALUES (1,'Desenvolvimento web','desenvolvimento-web','2026-05-16 01:48:00.619','2026-05-16 01:48:00.619'),(2,'Desenvolvimento backend','desenvolvimento-backend','2026-05-16 01:48:00.630','2026-05-16 01:48:00.630');
+/*!40000 ALTER TABLE `categories` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `comments`
@@ -173,6 +224,16 @@ CREATE TABLE `comments` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `comments`
+--
+
+LOCK TABLES `comments` WRITE;
+/*!40000 ALTER TABLE `comments` DISABLE KEYS */;
+INSERT INTO `comments` VALUES (1,'Excelente artigo! Muito bem explicado sobre as decisoes tecnicas do projeto.',1,1,'2026-05-16 01:48:00.639','2026-05-16 01:48:00.639'),(2,'Gostei da separacao entre leitura publica e escrita autenticada.',1,1,'2026-05-16 01:48:00.639','2026-05-16 01:48:00.639');
+/*!40000 ALTER TABLE `comments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `tags`
 --
 
@@ -187,6 +248,16 @@ CREATE TABLE `tags` (
   UNIQUE KEY `tags_name_key` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `tags`
+--
+
+LOCK TABLES `tags` WRITE;
+/*!40000 ALTER TABLE `tags` DISABLE KEYS */;
+INSERT INTO `tags` VALUES (1,'Produto','2026-05-16 01:48:00.619'),(2,'Backend','2026-05-16 01:48:00.619'),(3,'Typescript','2026-05-16 01:48:00.619'),(4,'Express','2026-05-16 01:48:00.630'),(5,'JWT','2026-05-16 01:48:00.630'),(6,'Autenticacao','2026-05-16 01:48:00.630');
+/*!40000 ALTER TABLE `tags` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `users`
@@ -207,12 +278,18 @@ CREATE TABLE `users` (
   `role` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'AUTHOR',
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_key` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping routines for database 'mind_blog'
+-- Dumping data for table `users`
 --
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'Cassiano Proenca','cassiano@example.com','$2b$10$H1Dr3KBKLr4DePbuT2eEOuElcjcx5dYWwKQoI8Hw3hhXX6RET3vt.','2026-05-16 01:48:00.593','2026-05-16 01:48:00.593','Desenvolvedor Full Stack apaixonado por tecnologia e inovacao.','https://images.unsplash.com/photo-1472099645785-5658abf4ff4e','ADMIN');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -223,4 +300,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-15 23:10:28
+-- Dump completed on 2026-05-16  1:48:25
