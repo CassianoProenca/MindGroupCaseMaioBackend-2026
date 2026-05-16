@@ -18,13 +18,28 @@ const loginSchema = z.object({
   password: z.string().min(1, "Senha e obrigatoria."),
 })
 
-type PublicUser = {
+type TokenUser = {
   id: number
   name: string
   email: string
 }
 
-function signToken(user: PublicUser) {
+type PublicUser = TokenUser & {
+  bio: string | null
+  avatarUrl: string | null
+  role: string
+}
+
+const publicUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  bio: true,
+  avatarUrl: true,
+  role: true,
+} as const
+
+function signToken(user: TokenUser) {
   return jwt.sign(user, env.jwtSecret, { expiresIn: "7d" })
 }
 
@@ -49,14 +64,11 @@ export async function register(request: Request, response: Response) {
       email,
       passwordHash,
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-    },
+    select: publicUserSelect,
   })
 
-  return response.status(201).json({ user, token: signToken(user) })
+  const token = signToken({ id: user.id, name: user.name, email: user.email })
+  return response.status(201).json({ user, token })
 }
 
 export async function login(request: Request, response: Response) {
@@ -73,15 +85,32 @@ export async function login(request: Request, response: Response) {
     return sendError(response, 401, "Email ou senha invalidos.")
   }
 
-  const publicUser = {
+  const publicUser: PublicUser = {
     id: user.id,
     name: user.name,
     email: user.email,
+    bio: user.bio,
+    avatarUrl: user.avatarUrl,
+    role: user.role,
   }
 
-  return response.json({ user: publicUser, token: signToken(publicUser) })
+  const token = signToken({ id: user.id, name: user.name, email: user.email })
+  return response.json({ user: publicUser, token })
 }
 
-export function me(request: Request, response: Response) {
-  return response.json({ user: request.user })
+export async function me(request: Request, response: Response) {
+  if (!request.user) {
+    return sendError(response, 401, "Usuario nao autenticado.")
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: request.user.id },
+    select: publicUserSelect,
+  })
+
+  if (!user) {
+    return sendError(response, 401, "Usuario nao encontrado.")
+  }
+
+  return response.json({ user })
 }
