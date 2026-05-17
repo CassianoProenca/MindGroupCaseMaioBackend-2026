@@ -5,6 +5,9 @@ declare global {
         id: number
         name: string
         email: string
+        bio: string | null
+        avatarUrl: string | null
+        role: string
       }
     }
   }

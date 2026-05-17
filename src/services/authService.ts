@@ -1,7 +1,5 @@
 import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
 
-import { env } from "../config/env.js"
 import { AppError } from "../errors/AppError.js"
 import { mapPublicUser } from "../mappers/userMapper.js"
 import * as userRepository from "../repositories/userRepository.js"
@@ -11,6 +9,8 @@ import type {
   RegisterInput,
   ResetPasswordInput,
 } from "../schemas/authSchemas.js"
+import { env } from "../config/env.js"
+import { signUserToken } from "../utils/jwt.js"
 import { sendPasswordResetEmail } from "../utils/mailer.js"
 import {
   RESET_TOKEN_TTL_MS,
@@ -19,17 +19,6 @@ import {
 } from "../utils/resetToken.js"
 
 const PASSWORD_SALT_ROUNDS = 10
-const TOKEN_EXPIRATION = "7d"
-
-type TokenUser = {
-  id: number
-  name: string
-  email: string
-}
-
-function signToken(user: TokenUser) {
-  return jwt.sign(user, env.jwtSecret, { expiresIn: TOKEN_EXPIRATION })
-}
 
 export async function register(data: RegisterInput) {
   const existing = await userRepository.findByEmail(data.email)
@@ -45,7 +34,7 @@ export async function register(data: RegisterInput) {
     passwordHash,
   })
 
-  const token = signToken({ id: user.id, name: user.name, email: user.email })
+  const token = signUserToken(user)
   return { user, token }
 }
 
@@ -56,8 +45,9 @@ export async function login(data: LoginInput) {
     throw new AppError(401, "Email ou senha invalidos.")
   }
 
-  const token = signToken({ id: user.id, name: user.name, email: user.email })
-  return { user: mapPublicUser(user), token }
+  const publicUser = mapPublicUser(user)
+  const token = signUserToken(publicUser)
+  return { user: publicUser, token }
 }
 
 export async function getCurrentUser(userId: number) {
@@ -110,6 +100,7 @@ export async function resetPassword(data: ResetPasswordInput) {
   const passwordHash = await bcrypt.hash(data.password, PASSWORD_SALT_ROUNDS)
   await userRepository.clearResetTokenAndSetPassword(user.id, passwordHash)
 
-  const token = signToken({ id: user.id, name: user.name, email: user.email })
-  return { user: mapPublicUser(user), token }
+  const publicUser = mapPublicUser(user)
+  const token = signUserToken(publicUser)
+  return { user: publicUser, token }
 }

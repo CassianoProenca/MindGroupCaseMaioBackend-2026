@@ -3,12 +3,9 @@ import jwt from "jsonwebtoken"
 
 import { env } from "../config/env.js"
 import { AppError } from "../errors/AppError.js"
+import type { TokenUser } from "../utils/jwt.js"
 
-type TokenPayload = {
-  id: number
-  name: string
-  email: string
-}
+type TokenPayload = TokenUser
 
 export function authenticate(request: Request, _response: Response, next: NextFunction) {
   const authHeader = request.headers.authorization
