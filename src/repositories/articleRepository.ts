@@ -34,7 +34,7 @@ export function findBannerById(id: number) {
 export function findCountersById(id: number) {
   return prisma.article.findUnique({
     where: { id },
-    select: { id: true, likesCount: true, viewsCount: true },
+    select: { id: true, likesCount: true, viewsCount: true, bookmarksCount: true },
   })
 }
 

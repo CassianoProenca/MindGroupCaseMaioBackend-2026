@@ -789,6 +789,7 @@ async function main() {
   })
 
   const minute = 60 * 1000
+  const createdArticleIds: number[] = []
 
   for (let articleIndex = 0; articleIndex < ARTICLES.length; articleIndex++) {
     const seed = ARTICLES[articleIndex]
@@ -839,6 +840,18 @@ async function main() {
     }
 
     await prisma.comment.createMany({ data: comments })
+    createdArticleIds.push(article.id)
+  }
+
+  const bookmarkedIds = createdArticleIds.slice(0, 3)
+  if (bookmarkedIds.length > 0) {
+    await prisma.articleBookmark.createMany({
+      data: bookmarkedIds.map((articleId) => ({ articleId, userId: admin.id })),
+    })
+    await prisma.article.updateMany({
+      where: { id: { in: bookmarkedIds } },
+      data: { bookmarksCount: 1 },
+    })
   }
 }
 

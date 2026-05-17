@@ -39,6 +39,7 @@ export function mapArticle(article: ArticleWithRelations) {
     bannerUrl: article.bannerImage ? `/articles/${article.id}/banner` : null,
     viewsCount: article.viewsCount,
     likesCount: article.likesCount,
+    bookmarksCount: article.bookmarksCount,
     commentsCount: article._count.comments,
     readingTimeMinutes: getReadingTimeMinutes(article.content),
     publishedAt: article.publishedAt,

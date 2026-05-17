@@ -22,6 +22,7 @@ model User {
   articles     Article[]
   comments     Comment[]
   likes        ArticleLike[]
+  bookmarks    ArticleBookmark[]
   reads        ArticleRead[]
 
   @@map("users")
@@ -37,6 +38,7 @@ model Article {
   bannerMimeType String?  @map("banner_mime_type") @db.VarChar(80)
   viewsCount     Int      @default(0) @map("views_count")
   likesCount     Int      @default(0) @map("likes_count")
+  bookmarksCount Int      @default(0) @map("bookmarks_count")
   authorId       Int      @map("author_id")
   publishedAt    DateTime @default(now()) @map("published_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -45,6 +47,7 @@ model Article {
   tags           ArticleTag[]
   comments       Comment[]
   likes          ArticleLike[]
+  bookmarks      ArticleBookmark[]
   reads          ArticleRead[]
 
   @@index([authorId])
@@ -109,6 +112,19 @@ model ArticleLike {
   @@unique([articleId, userId])
   @@index([userId])
   @@map("article_likes")
+}
+
+model ArticleBookmark {
+  id        Int      @id @default(autoincrement())
+  articleId Int      @map("article_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([userId])
+  @@map("article_bookmarks")
 }
 
 model ArticleRead {

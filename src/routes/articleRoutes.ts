@@ -22,6 +22,12 @@ import {
   registerArticleView,
   unlikeArticle,
 } from "../controllers/engagementController.js"
+import {
+  bookmarkArticle,
+  getArticleBookmarkStatus,
+  listMyBookmarks,
+  unbookmarkArticle,
+} from "../controllers/bookmarkController.js"
 import { authenticate, optionalAuthenticate } from "../middlewares/auth.js"
 import { upload } from "../middlewares/upload.js"
 
@@ -32,15 +38,19 @@ articleRoutes.get("/categories", listCategories)
 articleRoutes.post("/categories", authenticate, createCategory)
 articleRoutes.put("/categories/:categoryId", authenticate, updateCategory)
 articleRoutes.delete("/categories/:categoryId", authenticate, deleteCategory)
+articleRoutes.get("/saved", authenticate, listMyBookmarks)
 articleRoutes.get("/:id", getArticle)
 articleRoutes.get("/:id/banner", getArticleBanner)
 articleRoutes.get("/:id/comments", listComments)
 articleRoutes.get("/:id/like", authenticate, getArticleLikeStatus)
+articleRoutes.get("/:id/bookmark", authenticate, getArticleBookmarkStatus)
 articleRoutes.post("/:id/comments", authenticate, createComment)
 articleRoutes.post("/:id/view", registerArticleView)
 articleRoutes.post("/:id/read", optionalAuthenticate, registerArticleRead)
 articleRoutes.post("/:id/like", authenticate, likeArticle)
 articleRoutes.delete("/:id/like", authenticate, unlikeArticle)
+articleRoutes.post("/:id/bookmark", authenticate, bookmarkArticle)
+articleRoutes.delete("/:id/bookmark", authenticate, unbookmarkArticle)
 articleRoutes.post("/", authenticate, upload.single("banner"), createArticle)
 articleRoutes.put("/:id", authenticate, upload.single("banner"), updateArticle)
 articleRoutes.delete("/:id", authenticate, deleteArticle)

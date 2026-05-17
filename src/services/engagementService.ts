@@ -33,7 +33,7 @@ export async function registerView(articleId: number, data: ArticleViewInput) {
     return tx.article.update({
       where: { id: articleId },
       data: { viewsCount: { increment: 1 } },
-      select: { id: true, viewsCount: true, likesCount: true },
+      select: { id: true, viewsCount: true, likesCount: true, bookmarksCount: true },
     })
   })
 
