@@ -2,6 +2,8 @@
 
 Backend em Node.js, Express, TypeScript, Prisma e MySQL para o case de estagio da Mind Group.
 
+> Frontend do projeto: https://github.com/CassianoProenca/MindGroupCaseMaioFrontend-2026
+
 ## Tecnologias
 
 - Node.js 24 + Express 5
@@ -14,6 +16,23 @@ Backend em Node.js, Express, TypeScript, Prisma e MySQL para o case de estagio d
 - Nodemailer + Gmail SMTP (recuperacao de senha)
 - Multer + LongBlob do MySQL para banner de artigo
 - Zod para validacao
+- Vitest + @vitest/coverage-v8 para testes
+
+## Sumario
+
+- [Requisitos](#requisitos)
+- [Opcao A: Docker (recomendado)](#opcao-a-docker-recomendado)
+- [Opcao B: Sem Docker (MySQL local + dump)](#opcao-b-sem-docker-mysql-local--dump)
+- [Login pos-seed / dump](#login-pos-seed--dump)
+- [Variaveis de ambiente](#variaveis-de-ambiente)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Scripts npm](#scripts-npm)
+- [Testes](#testes)
+- [Rotas](#rotas)
+- [Banco de dados](#banco-de-dados)
+- [Troubleshooting](#troubleshooting)
+- [Exemplo de uso](#exemplo-de-uso)
+- [Cobertura do case](#cobertura-do-case)
 
 ## Requisitos
 
@@ -142,7 +161,11 @@ Variaveis do MySQL no Docker (`MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWO
 
 > **App Password do Gmail:** o `SMTP_PASS` precisa ser uma App Password de 16 caracteres gerada em https://myaccount.google.com/apppasswords (exige 2FA ativo). A senha normal da conta nao funciona.
 
+> ⚠️ A App Password do Gmail incluida por padrao sera **revogada apos o processo seletivo**. Se o fluxo de reset-password parar de funcionar, gere uma nova App Password em https://myaccount.google.com/apppasswords e atualize `SMTP_PASS` no `.env` ou no `docker-compose.yml`.
+
 ## Estrutura do projeto
+
+Arquitetura em camadas: `controllers/` (HTTP) → `services/` (regras de negocio) → `repositories/` (Prisma) → `mappers/` (resposta). Cada camada e testada de forma isolada em `tests/`.
 
 ```
 src/
@@ -158,6 +181,13 @@ src/
   mappers/            # serializacao pra resposta
   utils/              # mailer, resetToken, pagination, readingTime, requireUser
   errors/             # AppError + errorHandler
+tests/
+  setup.ts            # bootstrap do Vitest
+  mappers/            # testes dos mappers
+  middlewares/        # testes dos middlewares
+  schemas/            # testes dos schemas Zod
+  services/           # testes das regras de negocio
+  utils/              # testes dos utilitarios
 prisma/
   schema.prisma       # modelos
   migrations/         # historico Prisma
@@ -181,6 +211,27 @@ npm run prisma:generate  # gera o Prisma Client
 npm run prisma:migrate   # prisma migrate dev (cria nova migration)
 npm run prisma:deploy    # prisma migrate deploy (aplica em prod)
 npm run db:seed          # roda prisma/seed.ts
+npm test                 # roda toda a suite Vitest
+npm run test:watch       # modo watch
+npm run test:coverage    # relatorio de cobertura
+```
+
+## Testes
+
+A suite usa **Vitest**. Os arquivos vivem em `tests/` espelhando a estrutura de `src/`:
+
+- `tests/mappers/` — serializacao de Article, Comment, Profile.
+- `tests/middlewares/` — `authenticate`, `optionalAuthenticate`, `upload`.
+- `tests/schemas/` — schemas Zod usados nos controllers.
+- `tests/services/` — regras de negocio (auth, article, engagement, bookmark, etc.).
+- `tests/utils/` — `resetToken`, `pagination`, `readingTime`, `mailer`.
+
+`tests/setup.ts` configura o ambiente (variaveis de teste e mocks globais). Os testes nao tocam o banco real — repositories sao mockados nos testes de service.
+
+```bash
+npm test                 # roda tudo uma vez
+npm run test:watch       # re-roda ao salvar
+npm run test:coverage    # gera relatorio em coverage/
 ```
 
 ## Rotas
@@ -261,6 +312,45 @@ O payload do JWT carrega o user publico completo (`id`, `name`, `email`, `bio`, 
 - Historico de migrations em `prisma/migrations/`.
 - Dump completo (DDL + dados + blobs) em `database.sql`.
 - Imagens usadas pelo seed em `prisma/banners/` — o seed detecta o MIME pelos magic bytes, entao o nome do arquivo pode ter qualquer extensao.
+
+## Troubleshooting
+
+| Sintoma | Causa provavel | Como resolver |
+|---|---|---|
+| `docker compose up` falha com `port 3306 already in use` | Outro MySQL ja escuta na porta padrao | `docker compose down` ou ajuste `MYSQL_PORT` no `docker-compose.yml` (e no `DATABASE_URL` se necessario) |
+| `prisma migrate deploy` falha no boot do container `api` | Banco em estado inconsistente | `docker compose down -v` (apaga o volume do MySQL) e suba de novo |
+| Email de reset nao chega | App Password do Gmail revogada ou bloqueada | Gere uma nova em https://myaccount.google.com/apppasswords, atualize `SMTP_PASS`, e verifique a pasta de spam |
+| `GET /articles/:id/banner` retorna 404 | Artigo sem banner ou id errado | Confirme com `GET /articles/:id` se `bannerUrl` esta presente |
+| Frontend nao consegue logar (CORS error) | `FRONTEND_URL` diferente da origem real | Ajuste `FRONTEND_URL` no `.env` ou no `docker-compose.yml` para casar com a URL do Vite (default `http://localhost:5173`) |
+
+## Exemplo de uso
+
+Login (retorna `token` Bearer):
+
+```bash
+curl -X POST http://localhost:3333/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"john@example.com","password":"123456"}'
+```
+
+Criar artigo com banner (multipart):
+
+```bash
+curl -X POST http://localhost:3333/articles \
+  -H "Authorization: Bearer <SEU_TOKEN>" \
+  -F "title=Meu primeiro artigo" \
+  -F "summary=Resumo curto" \
+  -F "content=Conteudo completo do artigo..." \
+  -F "category=Tecnologia" \
+  -F "tags=react,typescript,node" \
+  -F "banner=@./caminho/para/banner.jpg"
+```
+
+Listar artigos (paginado, opcionalmente filtrando por categoria):
+
+```bash
+curl "http://localhost:3333/articles?page=1&perPage=10&categoryId=<UUID>"
+```
 
 ## Cobertura do case
 
