@@ -8,15 +8,17 @@ datasource db {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  name         String    @db.VarChar(120)
-  email        String    @unique @db.VarChar(160)
-  passwordHash String    @map("password_hash") @db.VarChar(255)
-  bio          String?   @db.Text
-  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
-  role         String    @default("AUTHOR") @db.VarChar(40)
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  id                  Int       @id @default(autoincrement())
+  name                String    @db.VarChar(120)
+  email               String    @unique @db.VarChar(160)
+  passwordHash        String    @map("password_hash") @db.VarChar(255)
+  bio                 String?   @db.Text
+  avatarUrl           String?   @map("avatar_url") @db.VarChar(500)
+  role                String    @default("AUTHOR") @db.VarChar(40)
+  resetTokenHash      String?   @map("reset_token_hash") @db.VarChar(255)
+  resetTokenExpiresAt DateTime? @map("reset_token_expires_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
   articles     Article[]
   comments     Comment[]
   likes        ArticleLike[]

@@ -47,3 +47,27 @@ type UpdateProfileData = {
 export function updateProfile(id: number, data: UpdateProfileData) {
   return prisma.user.update({ where: { id }, data, select: profileSelect })
 }
+
+export function findByResetTokenHash(resetTokenHash: string) {
+  return prisma.user.findFirst({ where: { resetTokenHash } })
+}
+
+type ResetTokenData = {
+  resetTokenHash: string
+  resetTokenExpiresAt: Date
+}
+
+export function setResetToken(id: number, data: ResetTokenData) {
+  return prisma.user.update({ where: { id }, data })
+}
+
+export function clearResetTokenAndSetPassword(id: number, passwordHash: string) {
+  return prisma.user.update({
+    where: { id },
+    data: {
+      passwordHash,
+      resetTokenHash: null,
+      resetTokenExpiresAt: null,
+    },
+  })
+}

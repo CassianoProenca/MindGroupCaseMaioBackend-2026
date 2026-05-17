@@ -1,6 +1,11 @@
 import type { Request, Response } from "express"
 
-import { loginSchema, registerSchema } from "../schemas/authSchemas.js"
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "../schemas/authSchemas.js"
 import * as authService from "../services/authService.js"
 import { requireUser } from "../utils/requireUser.js"
 
@@ -20,4 +25,16 @@ export async function me(request: Request, response: Response) {
   const current = requireUser(request)
   const user = await authService.getCurrentUser(current.id)
   response.json({ user })
+}
+
+export async function forgotPassword(request: Request, response: Response) {
+  const data = forgotPasswordSchema.parse(request.body)
+  const result = await authService.requestPasswordReset(data)
+  response.json(result)
+}
+
+export async function resetPassword(request: Request, response: Response) {
+  const data = resetPasswordSchema.parse(request.body)
+  const result = await authService.resetPassword(data)
+  response.json(result)
 }
