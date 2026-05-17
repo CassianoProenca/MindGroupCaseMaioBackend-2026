@@ -1,3 +1,7 @@
+import { existsSync, readFileSync } from "node:fs"
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
+
 import { Prisma, PrismaClient } from "@prisma/client"
 import bcrypt from "bcrypt"
 
@@ -7,6 +11,53 @@ const transparentPng = Buffer.from(
   "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c6360000002000100ffff03000006000557bfab5d0000000049454e44ae426082",
   "hex",
 )
+
+const BANNERS_DIR = join(dirname(fileURLToPath(import.meta.url)), "banners")
+
+function detectMime(data: Buffer): string {
+  if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
+    return "image/jpeg"
+  }
+  if (
+    data.length >= 8 &&
+    data[0] === 0x89 &&
+    data[1] === 0x50 &&
+    data[2] === 0x4e &&
+    data[3] === 0x47 &&
+    data[4] === 0x0d &&
+    data[5] === 0x0a &&
+    data[6] === 0x1a &&
+    data[7] === 0x0a
+  ) {
+    return "image/png"
+  }
+  if (
+    data.length >= 12 &&
+    data.toString("ascii", 0, 4) === "RIFF" &&
+    data.toString("ascii", 8, 12) === "WEBP"
+  ) {
+    return "image/webp"
+  }
+  if (data.length >= 4 && data.toString("ascii", 0, 4) === "GIF8") {
+    return "image/gif"
+  }
+  return "application/octet-stream"
+}
+
+function loadBanner(filename: string): { data: Buffer; mime: string } {
+  const path = join(BANNERS_DIR, filename)
+  if (!existsSync(path)) {
+    console.warn(`[seed] Banner "${filename}" nao encontrado, usando placeholder.`)
+    return { data: transparentPng, mime: "image/png" }
+  }
+  const data = readFileSync(path)
+  const mime = detectMime(data)
+  if (mime === "application/octet-stream") {
+    console.warn(`[seed] Banner "${filename}" com formato desconhecido, usando placeholder.`)
+    return { data: transparentPng, mime: "image/png" }
+  }
+  return { data, mime }
+}
 
 function slugify(name: string) {
   return name
@@ -99,6 +150,7 @@ type ArticleSeed = {
   viewsCount: number
   likesCount: number
   content: string
+  bannerFile: string
 }
 
 const ARTICLES: ArticleSeed[] = [
@@ -109,6 +161,7 @@ const ARTICLES: ArticleSeed[] = [
     tags: ["IA", "LLM", "Produto"],
     viewsCount: 1280,
     likesCount: 47,
+    bannerFile: "IA.png",
     content: `A inteligencia artificial generativa deixou de ser tema academico para virar componente central em produtos de todo porte. Modelos como GPT-4, Claude e Gemini estao integrados a editores de codigo, atendimentos de suporte, ferramentas de design e ate decisoes financeiras. Para times de tecnologia, ignorar essa onda nao e mais uma opcao razoavel.
 
 ## Como esses modelos realmente funcionam
@@ -148,6 +201,7 @@ A proxima geracao de produtos provavelmente vai ter IA integrada por padrao, da 
     tags: ["Seguranca", "API", "OWASP"],
     viewsCount: 940,
     likesCount: 31,
+    bannerFile: "segurana digital.webp",
     content: `Toda API exposta na internet e um alvo. Bots automatizados varrem a web procurando endpoints abertos, credenciais expostas e versoes vulneraveis. Manter uma API segura nao e questao de paranoia, e parte basica da entrega. Felizmente, a maior parte dos cuidados sao previsiveis e podem ser tratados com poucas camadas bem desenhadas.
 
 ## Autenticacao: comece sempre por aqui
@@ -207,6 +261,7 @@ Seguranca em API e disciplina, nao genialidade. As ferramentas existem, os padro
     tags: ["Arquitetura", "DDD", "Clean Code"],
     viewsCount: 670,
     likesCount: 22,
+    bannerFile: "arquitetura de software.jpg",
     content: `Voce ja se viu reescrevendo metade do projeto porque o time decidiu trocar o ORM, ou porque o banco precisou virar PostgreSQL no lugar de MySQL? Boa parte desse retrabalho vem de um problema arquitetural conhecido: misturar regras de negocio com detalhes de infraestrutura.
 
 ## A ideia central
@@ -252,6 +307,7 @@ Arquitetura hexagonal e uma ferramenta poderosa para times que precisam manter p
     tags: ["TypeScript", "Node.js", "Backend"],
     viewsCount: 1140,
     likesCount: 38,
+    bannerFile: "arquitetura de software-2.jpg",
     content: `TypeScript saiu do nicho de paixao de devs front-end e se consolidou como padrao em backends Node.js modernos. Praticamente todo projeto novo que merece atencao em 2026 ja nasce com TypeScript. Ainda assim, muita gente questiona se vale a pena migrar projetos existentes ou se isso e modismo.
 
 ## O ganho mais imediato: feedback no editor
@@ -297,6 +353,7 @@ TypeScript no backend nao e questao de hype. E uma ferramenta madura que entrega
     tags: ["Observabilidade", "Monitoramento", "SRE"],
     viewsCount: 880,
     likesCount: 28,
+    bannerFile: "devops.png",
     content: `Sistemas distribuidos falham de formas inesperadas. Servicos lentos cascateiam, deploys quebram dependencias invisiveis, bugs aparecem so sob carga real. A unica defesa eficaz contra isso e observabilidade, que e um termo mais amplo do que monitoramento tradicional.
 
 ## A diferenca entre monitorar e observar
@@ -350,6 +407,7 @@ Observabilidade nao e luxo, e o instrumento que separa times que reagem rapido d
     tags: ["CI/CD", "Deploy", "DevOps"],
     viewsCount: 720,
     likesCount: 26,
+    bannerFile: "devops-2.png",
     content: `Pipeline de CI que demora vinte minutos para rodar testes vira inimigo do time. Deploy que exige rodar quinze comandos manuais nunca acontece nos horarios certos. Em ambos os casos, o problema nao e a ferramenta, e o desenho do processo.
 
 ## O que CI/CD bem feito entrega
@@ -395,6 +453,7 @@ CI/CD bem feito e a diferenca entre time que entrega com confianca e time que te
     tags: ["Cache", "Performance", "Arquitetura"],
     viewsCount: 590,
     likesCount: 19,
+    bannerFile: "arquitetura de software-2.jpg",
     content: `Cache e a optimizacao mais usada e mais mal usada em sistemas distribuidos. Aplicado certo, transforma performance e reduz custos. Aplicado errado, gera bugs sutis, dados desatualizados e debugging frustrante de madrugada.
 
 ## Por que cache funciona
@@ -450,6 +509,7 @@ Cache e ferramenta poderosa, mas come complexidade de retorno. Adote quando os g
     tags: ["Seguranca", "Threat Modeling", "Arquitetura"],
     viewsCount: 510,
     likesCount: 17,
+    bannerFile: "segurana digital-2.jpg",
     content: `Threat modeling tem fama de ser exercicio caro, lento e que so grandes empresas fazem. Na pratica, e uma das tecnicas mais altas em retorno por hora investida. Bem aplicado, identifica vulnerabilidades em pontos onde nenhum scanner encontraria.
 
 ## O que e e o que nao e
@@ -517,6 +577,7 @@ Threat modeling e uma das tecnicas mais subutilizadas em seguranca. Em poucas ho
     tags: ["Microsservicos", "Monolito", "Arquitetura"],
     viewsCount: 1320,
     likesCount: 42,
+    bannerFile: "arquitetura de software.jpg",
     content: `Microsservicos viraram default em muitos times sem que ninguem se perguntasse se valia a pena. O resultado e arquitetura distribuida com complexidade operacional alta e ganhos questionaveis. Nesse artigo, vamos examinar quando microsservicos realmente entregam valor e quando monolito modular continua sendo a melhor escolha.
 
 ## O que cada abordagem promete
@@ -578,6 +639,7 @@ Nao escolha arquitetura por moda. Microsservicos resolvem problemas reais quando
     tags: ["LLM", "IA", "Producao"],
     viewsCount: 950,
     likesCount: 33,
+    bannerFile: "IA-2.png",
     content: `Demos de LLM impressionam. Voce digita um prompt, recebe resposta inteligente, sente que esta vendo o futuro. Mas levar esse mesmo modelo para producao, atender milhares de usuarios com latencia previsivel e custo controlado, e outra historia. Esse artigo explora os desafios que aparecem alem do prototipo.
 
 ## O problema do custo
@@ -730,6 +792,7 @@ async function main() {
 
   for (let articleIndex = 0; articleIndex < ARTICLES.length; articleIndex++) {
     const seed = ARTICLES[articleIndex]
+    const banner = loadBanner(seed.bannerFile)
 
     const article = await prisma.article.create({
       data: {
@@ -737,8 +800,8 @@ async function main() {
         summary: seed.summary,
         category: categoryConnect(seed.category),
         content: seed.content,
-        bannerImage: transparentPng,
-        bannerMimeType: "image/png",
+        bannerImage: banner.data,
+        bannerMimeType: banner.mime,
         viewsCount: seed.viewsCount,
         likesCount: seed.likesCount,
         author: {
