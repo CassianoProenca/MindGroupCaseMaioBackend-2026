@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express"
 import jwt from "jsonwebtoken"
 
 import { env } from "../config/env.js"
-import { sendError } from "../utils/http.js"
+import { AppError } from "../errors/AppError.js"
 
 type TokenPayload = {
   id: number
@@ -10,11 +10,11 @@ type TokenPayload = {
   email: string
 }
 
-export function authenticate(request: Request, response: Response, next: NextFunction) {
+export function authenticate(request: Request, _response: Response, next: NextFunction) {
   const authHeader = request.headers.authorization
 
   if (!authHeader?.startsWith("Bearer ")) {
-    return sendError(response, 401, "Token de autenticacao nao informado.")
+    throw new AppError(401, "Token de autenticacao nao informado.")
   }
 
   const token = authHeader.replace("Bearer ", "")
@@ -23,7 +23,7 @@ export function authenticate(request: Request, response: Response, next: NextFun
     request.user = jwt.verify(token, env.jwtSecret) as TokenPayload
     return next()
   } catch {
-    return sendError(response, 401, "Token invalido ou expirado.")
+    throw new AppError(401, "Token invalido ou expirado.")
   }
 }
 

@@ -2,16 +2,18 @@ import { Router } from "express"
 
 import {
   createArticle,
-  createCategory,
   deleteArticle,
-  deleteCategory,
   getArticle,
   getArticleBanner,
-  listCategories,
   listArticles,
-  updateCategory,
   updateArticle,
 } from "../controllers/articleController.js"
+import {
+  createCategory,
+  deleteCategory,
+  listCategories,
+  updateCategory,
+} from "../controllers/categoryController.js"
 import { createComment, listComments } from "../controllers/commentController.js"
 import {
   getArticleLikeStatus,
