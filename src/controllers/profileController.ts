@@ -2,16 +2,8 @@ import type { Request, Response } from "express"
 
 import { profileSchema } from "../schemas/profileSchemas.js"
 import * as profileService from "../services/profileService.js"
-import { makePaginationMeta } from "../utils/pagination.js"
+import { getPagination, makePaginationMeta } from "../utils/pagination.js"
 import { requireUser } from "../utils/requireUser.js"
-
-const MAX_RECENT_ACTIVITY_PER_PAGE = 50
-const DEFAULT_RECENT_ACTIVITY_PER_PAGE = 3
-
-function toPositiveInteger(value: unknown, fallback: number) {
-  const parsed = Number(value)
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
-}
 
 export async function getMyProfile(request: Request, response: Response) {
   const user = requireUser(request)
@@ -34,12 +26,7 @@ export async function getMyDashboardMetrics(request: Request, response: Response
 
 export async function getMyRecentActivity(request: Request, response: Response) {
   const user = requireUser(request)
-  const page = toPositiveInteger(request.query.page, 1)
-  const perPage = Math.min(
-    toPositiveInteger(request.query.perPage, DEFAULT_RECENT_ACTIVITY_PER_PAGE),
-    MAX_RECENT_ACTIVITY_PER_PAGE,
-  )
-
-  const { items, total } = await profileService.getMyRecentActivity({ userId: user.id, page, perPage })
+  const { page, perPage, skip, take } = getPagination(request, { defaultPerPage: 3 })
+  const { items, total } = await profileService.getMyRecentActivity({ userId: user.id, skip, take })
   response.json({ activity: items, meta: makePaginationMeta(total, page, perPage) })
 }

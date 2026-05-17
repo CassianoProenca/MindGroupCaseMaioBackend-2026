@@ -1,20 +1,11 @@
-import { AppError } from "../errors/AppError.js"
 import { prisma } from "../config/prisma.js"
 import * as articleLikeRepository from "../repositories/articleLikeRepository.js"
 import * as articleReadRepository from "../repositories/articleReadRepository.js"
-import * as articleRepository from "../repositories/articleRepository.js"
+import { ensureArticleCounters } from "./articleService.js"
 import type { ArticleReadInput, ArticleViewInput } from "../schemas/engagementSchemas.js"
 
-async function ensureArticle(articleId: number) {
-  const article = await articleRepository.findCountersById(articleId)
-  if (!article) {
-    throw new AppError(404, "Artigo nao encontrado.")
-  }
-  return article
-}
-
 export async function registerView(articleId: number, data: ArticleViewInput) {
-  const article = await ensureArticle(articleId)
+  const article = await ensureArticleCounters(articleId)
 
   const existing = await articleReadRepository.findFirst(articleId, data.readerId)
   if (existing) {
@@ -47,7 +38,7 @@ type RegisterReadParams = {
 }
 
 export async function registerRead({ articleId, userId, data }: RegisterReadParams) {
-  await ensureArticle(articleId)
+  await ensureArticleCounters(articleId)
 
   return articleReadRepository.create({
     articleId,
@@ -58,13 +49,13 @@ export async function registerRead({ articleId, userId, data }: RegisterReadPara
 }
 
 export async function getLikeStatus(articleId: number, userId: number) {
-  const article = await ensureArticle(articleId)
+  const article = await ensureArticleCounters(articleId)
   const like = await articleLikeRepository.findByArticleAndUser(articleId, userId)
   return { article, liked: Boolean(like) }
 }
 
 export async function like(articleId: number, userId: number) {
-  await ensureArticle(articleId)
+  await ensureArticleCounters(articleId)
 
   const existing = await articleLikeRepository.findByArticleAndUser(articleId, userId)
 
@@ -78,12 +69,12 @@ export async function like(articleId: number, userId: number) {
     ])
   }
 
-  const updated = await ensureArticle(articleId)
+  const updated = await ensureArticleCounters(articleId)
   return { article: updated, liked: true }
 }
 
 export async function unlike(articleId: number, userId: number) {
-  await ensureArticle(articleId)
+  await ensureArticleCounters(articleId)
 
   const existing = await articleLikeRepository.findByArticleAndUser(articleId, userId)
 
@@ -97,6 +88,6 @@ export async function unlike(articleId: number, userId: number) {
     ])
   }
 
-  const updated = await ensureArticle(articleId)
+  const updated = await ensureArticleCounters(articleId)
   return { article: updated, liked: false }
 }

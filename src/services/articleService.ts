@@ -45,6 +45,14 @@ export async function get(id: number) {
   return mapArticle(article)
 }
 
+export async function ensureArticleCounters(id: number) {
+  const article = await articleRepository.findCountersById(id)
+  if (!article) {
+    throw new AppError(404, "Artigo nao encontrado.")
+  }
+  return article
+}
+
 export async function getBanner(id: number) {
   const banner = await articleRepository.findBannerById(id)
 

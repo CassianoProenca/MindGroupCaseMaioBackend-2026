@@ -9,9 +9,16 @@ function toPositiveInteger(value: unknown, fallback: number) {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
 }
 
-export function getPagination(request: Request) {
+type PaginationOptions = {
+  defaultPerPage?: number
+  maxPerPage?: number
+}
+
+export function getPagination(request: Request, options: PaginationOptions = {}) {
+  const defaultPerPage = options.defaultPerPage ?? DEFAULT_PER_PAGE
+  const maxPerPage = options.maxPerPage ?? MAX_PER_PAGE
   const page = toPositiveInteger(request.query.page, DEFAULT_PAGE)
-  const perPage = Math.min(toPositiveInteger(request.query.perPage, DEFAULT_PER_PAGE), MAX_PER_PAGE)
+  const perPage = Math.min(toPositiveInteger(request.query.perPage, defaultPerPage), maxPerPage)
 
   return {
     page,
