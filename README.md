@@ -251,7 +251,9 @@ A rota `GET /articles/:id/banner` retorna o binario com o `Content-Type` correto
 | PUT | `/profile/me` | Bearer |
 | GET | `/profile/me/dashboard` | Bearer |
 
-`PUT /profile/me` aceita `name`, `bio`, `avatarUrl`.
+`PUT /profile/me` aceita `name`, `bio`, `avatarUrl` e devolve `{ profile, token }` — o token e reemitido com o payload atualizado para que o frontend nao precise persistir o user em outro lugar alem do proprio JWT.
+
+O payload do JWT carrega o user publico completo (`id`, `name`, `email`, `bio`, `avatarUrl`, `role`), entao o frontend pode hidratar o usuario sem armazenar dados sensiveis no `localStorage`.
 
 ## Banco de dados
 

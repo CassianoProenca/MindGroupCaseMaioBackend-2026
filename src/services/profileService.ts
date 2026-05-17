@@ -4,6 +4,7 @@ import * as articleRepository from "../repositories/articleRepository.js"
 import * as commentRepository from "../repositories/commentRepository.js"
 import * as userRepository from "../repositories/userRepository.js"
 import type { ProfileInput } from "../schemas/profileSchemas.js"
+import { signUserToken } from "../utils/jwt.js"
 import { getReadingTimeMinutes } from "../utils/readingTime.js"
 
 export async function getMyProfile(userId: number) {
@@ -21,7 +22,16 @@ export async function updateMyProfile(userId: number, data: ProfileInput) {
     bio: data.bio,
     avatarUrl,
   })
-  return mapProfile(user)
+  const profile = mapProfile(user)
+  const token = signUserToken({
+    id: profile.id,
+    name: profile.name,
+    email: profile.email,
+    bio: profile.bio,
+    avatarUrl: profile.avatarUrl,
+    role: profile.role,
+  })
+  return { profile, token }
 }
 
 export async function getMyDashboardMetrics(userId: number) {

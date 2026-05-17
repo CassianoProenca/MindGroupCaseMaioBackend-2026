@@ -22,8 +22,8 @@ export async function getMyProfile(request: Request, response: Response) {
 export async function updateMyProfile(request: Request, response: Response) {
   const user = requireUser(request)
   const data = profileSchema.parse(request.body)
-  const profile = await profileService.updateMyProfile(user.id, data)
-  response.json({ profile })
+  const { profile, token } = await profileService.updateMyProfile(user.id, data)
+  response.json({ profile, token })
 }
 
 export async function getMyDashboardMetrics(request: Request, response: Response) {
