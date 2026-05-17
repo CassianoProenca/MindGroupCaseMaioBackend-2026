@@ -1,132 +1,25 @@
 import type { Request, Response } from "express"
-import { z } from "zod"
 
-import { prisma } from "../config/prisma.js"
-import { sendError } from "../utils/http.js"
+import { articleIdParam } from "../schemas/articleSchemas.js"
+import { commentSchema } from "../schemas/commentSchemas.js"
+import * as commentService from "../services/commentService.js"
 import { getPagination, getSearch, makePaginationMeta } from "../utils/pagination.js"
-
-const commentSchema = z.object({
-  content: z.string().trim().min(3, "Comentario deve ter pelo menos 3 caracteres.").max(1000),
-})
-
-function getArticleId(request: Request) {
-  const articleId = Number(request.params.id)
-  return Number.isNaN(articleId) ? null : articleId
-}
-
-function mapComment(comment: {
-  id: number
-  content: string
-  createdAt: Date
-  updatedAt: Date
-  author: {
-    id: number
-    name: string
-    email: string
-    avatarUrl: string | null
-  }
-}) {
-  return {
-    id: comment.id,
-    content: comment.content,
-    createdAt: comment.createdAt,
-    updatedAt: comment.updatedAt,
-    author: comment.author,
-  }
-}
+import { requireUser } from "../utils/requireUser.js"
 
 export async function listComments(request: Request, response: Response) {
-  const articleId = getArticleId(request)
-
-  if (!articleId) {
-    return sendError(response, 400, "Id do artigo invalido.")
-  }
-
-  const article = await prisma.article.findUnique({
-    where: { id: articleId },
-    select: { id: true },
-  })
-
-  if (!article) {
-    return sendError(response, 404, "Artigo nao encontrado.")
-  }
-
+  const { id: articleId } = articleIdParam.parse(request.params)
   const { page, perPage, skip, take } = getPagination(request)
   const search = getSearch(request)
-  const where = {
-    articleId,
-    ...(search ? { content: { contains: search } } : {}),
-  }
 
-  const [comments, total] = await prisma.$transaction([
-    prisma.comment.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take,
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatarUrl: true,
-          },
-        },
-      },
-    }),
-    prisma.comment.count({ where }),
-  ])
-
-  return response.json({
-    comments: comments.map(mapComment),
-    meta: makePaginationMeta(total, page, perPage),
-  })
+  const { items, total } = await commentService.list({ articleId, skip, take, search })
+  response.json({ comments: items, meta: makePaginationMeta(total, page, perPage) })
 }
 
 export async function createComment(request: Request, response: Response) {
-  if (!request.user) {
-    return sendError(response, 401, "Usuario nao autenticado.")
-  }
+  const user = requireUser(request)
+  const { id: articleId } = articleIdParam.parse(request.params)
+  const data = commentSchema.parse(request.body)
 
-  const articleId = getArticleId(request)
-
-  if (!articleId) {
-    return sendError(response, 400, "Id do artigo invalido.")
-  }
-
-  const parsed = commentSchema.safeParse(request.body)
-
-  if (!parsed.success) {
-    return sendError(response, 400, parsed.error.issues[0]?.message ?? "Dados invalidos.")
-  }
-
-  const article = await prisma.article.findUnique({
-    where: { id: articleId },
-    select: { id: true },
-  })
-
-  if (!article) {
-    return sendError(response, 404, "Artigo nao encontrado.")
-  }
-
-  const comment = await prisma.comment.create({
-    data: {
-      content: parsed.data.content,
-      articleId,
-      authorId: request.user.id,
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatarUrl: true,
-        },
-      },
-    },
-  })
-
-  return response.status(201).json({ comment: mapComment(comment) })
+  const comment = await commentService.create({ articleId, authorId: user.id, data })
+  response.status(201).json({ comment })
 }
